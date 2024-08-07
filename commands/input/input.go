@@ -42,7 +42,12 @@ func LaunchEditor(repo repository.Repo, fileName string) (string, error) {
 		return "", fmt.Errorf("Unable to detect default git editor: %v\n", err)
 	}
 
-	path := fmt.Sprintf("%s/.git/%s", repo.GetPath(), fileName)
+	dataDir, err := repo.GetDataDir()
+	if err != nil {
+		return "", fmt.Errorf("Unable to get repo data directory: %v\n", err)
+	}
+
+	path := fmt.Sprintf("%s/%s", dataDir, fileName)
 
 	cmd, err := startInlineCommand(editor, path)
 	if err != nil {

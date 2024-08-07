@@ -183,6 +183,9 @@ func NewMockRepoForTest() Repo {
 // GetPath returns the path to the repo.
 func (r *mockRepoForTest) GetPath() string { return "~/mockRepo/" }
 
+// GetPath returns the path to the repo.
+func (r *mockRepoForTest) GetDataDir() (string, error) { return "~/mockRepo/.git", nil }
+
 // GetRepoStateHash returns a hash which embodies the entire current state of a repository.
 func (r *mockRepoForTest) GetRepoStateHash() (string, error) {
 	repoJSON, err := json.Marshal(r)

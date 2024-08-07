@@ -141,6 +141,10 @@ type Repo interface {
 	// GetPath returns the path to the repo.
 	GetPath() string
 
+	// GetDataDir returns the path to the repo data area, e.g. `.git` directory
+	// for git.
+	GetDataDir() (string, error)
+
 	// GetRepoStateHash returns a hash which embodies the entire current state of a repository.
 	GetRepoStateHash() (string, error)
 

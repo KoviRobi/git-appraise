@@ -144,6 +144,12 @@ func (repo *GitRepo) GetPath() string {
 	return repo.Path
 }
 
+// GetDataDir returns the path to the repo data area, e.g. `.git` directory for
+// git.
+func (repo *GitRepo) GetDataDir() (string, error) {
+	return repo.runGitCommand("rev-parse", "--git-dir")
+}
+
 // GetRepoStateHash returns a hash which embodies the entire current state of a repository.
 func (repo *GitRepo) GetRepoStateHash() (string, error) {
 	stateSummary, error := repo.runGitCommand("show-ref")
