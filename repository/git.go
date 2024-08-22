@@ -25,10 +25,13 @@ import (
 	"fmt"
 	"io"
 	"os"
-	exec "golang.org/x/sys/execabs"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
+	exec "golang.org/x/sys/execabs"
+
+	"github.com/bluekeyes/go-gitdiff/gitdiff"
 )
 
 const (
@@ -321,6 +324,65 @@ func (repo *GitRepo) Diff(left, right string, diffArgs ...string) (string, error
 	args = append(args, diffArgs...)
 	args = append(args, fmt.Sprintf("%s..%s", left, right))
 	return repo.runGitCommand(args...)
+}
+
+func (repo *GitRepo) ParsedDiff(left, right string, diffArgs ...string) ([]FileDiff, error)  {
+	if !slices.Contains(diffArgs, "--no-ext-diff") {
+		diffArgs = append(diffArgs, "--no-ext-diff")
+	}
+	diff, err := repo.Diff(left, right, diffArgs...)
+	if err != nil {
+		return nil, err
+	}
+
+	files, _, err := gitdiff.Parse(strings.NewReader(diff))
+	if err != nil {
+		return nil, err
+	}
+
+	var fileDiff []FileDiff
+
+	for _, file := range files {
+
+		var fragments []DiffFragment
+		for _, fragment := range file.TextFragments {
+
+			var lines []DiffLine
+			for _, line := range fragment.Lines {
+				var op DiffOp
+				switch line.Op {
+				case gitdiff.OpContext: op = OpContext
+				case gitdiff.OpAdd: op = OpAdd
+				case gitdiff.OpDelete: op = OpDelete
+				}
+				lines = append(lines, DiffLine{
+					Op: op,
+					Line: line.Line,
+				})
+			}
+
+			fragments = append(fragments, DiffFragment{
+				Comment: fragment.Comment,
+				OldPosition: fragment.OldPosition,
+				OldLines: fragment.OldLines,
+				NewPosition: fragment.NewPosition,
+				NewLines: fragment.NewLines,
+				LinesAdded: fragment.LinesAdded,
+				LinesDeleted: fragment.LinesDeleted,
+				LeadingContext: fragment.LeadingContext,
+				TrailingContext: fragment.TrailingContext,
+				Lines: lines,
+			})
+		}
+
+		fileDiff = append(fileDiff, FileDiff{
+			OldName: file.OldName,
+			NewName: file.NewName,
+			Fragments: fragments,
+		})
+	}
+
+	return fileDiff, nil
 }
 
 // Show returns the contents of the given file at the given commit.

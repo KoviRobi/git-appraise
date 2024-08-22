@@ -393,6 +393,33 @@ func (r *mockRepoForTest) Diff(left, right string, diffArgs ...string) (string, 
 	return fmt.Sprintf("Diff between %q and %q", left, right), nil
 }
 
+// Diff computes the diff between two given commits.
+func (r *mockRepoForTest) ParsedDiff(left, right string, diffArgs ...string) ([]FileDiff, error) {
+	return []FileDiff{
+			{
+				OldName: "foo",
+				NewName: "bar",
+				Fragments: []DiffFragment{
+					{
+						Comment: "",
+						OldPosition: 1,
+						OldLines: 1,
+						NewPosition: 1,
+						NewLines: 1,
+						LinesAdded: 1,
+						LinesDeleted: 1,
+						LeadingContext: 0,
+						TrailingContext: 0,
+						Lines: []DiffLine{
+							{OpDelete, "fooLine"},
+							{OpAdd, "barLine"},
+						},
+					},
+				},
+			},
+		}, nil
+}
+
 // Show returns the contents of the given file at the given commit.
 func (r *mockRepoForTest) Show(commit, path string) (string, error) {
 	return fmt.Sprintf("%s:%s", commit, path), nil

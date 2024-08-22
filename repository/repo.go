@@ -136,6 +136,58 @@ func (t *Tree) Contents() map[string]TreeChild {
 	return result
 }
 
+type DiffOp int
+
+const (
+	// OpContext indicates a context line
+	OpContext DiffOp = iota
+	// OpDelete indicates a deleted line
+	OpDelete
+	// OpAdd indicates an added line
+	OpAdd
+)
+
+func (op DiffOp) String() string {
+	switch op {
+	case OpContext: return " ";
+	case OpDelete: return "-";
+	case OpAdd: return "+";
+	default: return "";
+	}
+}
+
+type DiffLine struct {
+	Op   DiffOp
+	Line string
+}
+
+type DiffFragment struct {
+	Comment string
+
+	OldPosition int64
+	OldLines    int64
+
+	NewPosition int64
+	NewLines    int64
+
+	LinesAdded   int64
+	LinesDeleted int64
+
+	LeadingContext  int64
+	TrailingContext int64
+
+	Lines []DiffLine
+}
+
+type FileDiff struct {
+	OldName string
+	NewName string
+
+	// Fragments contains the fragments describing changes to a text file. It
+	// may be empty if the file is empty or if only the mode changes.
+	Fragments []DiffFragment
+}
+
 // Repo represents a source code repository.
 type Repo interface {
 	// GetPath returns the path to the repo.
@@ -213,6 +265,9 @@ type Repo interface {
 
 	// Diff computes the diff between two given commits.
 	Diff(left, right string, diffArgs ...string) (string, error)
+
+	// ParsedDiff computes the diff between two given commits.
+	ParsedDiff(left, right string, diffArgs ...string) ([]FileDiff, error)
 
 	// Show returns the contents of the given file at the given commit.
 	Show(commit, path string) (string, error)
