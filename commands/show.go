@@ -30,10 +30,11 @@ import (
 var showFlagSet = flag.NewFlagSet("show", flag.ExitOnError)
 
 var (
-	showDetached    = showFlagSet.Bool("d", false, "Show the detached comments for the given path")
-	showJSONOutput  = showFlagSet.Bool("json", false, "Format the output as JSON")
-	showDiffOutput  = showFlagSet.Bool("diff", false, "Show the current diff for the review")
-	showDiffOptions = showFlagSet.String("diff-opts", "", "Options to pass to the diff tool; can only be used with the --diff option")
+	showDetached     = showFlagSet.Bool("d", false, "Show the detached comments for the given path")
+	showJSONOutput   = showFlagSet.Bool("json", false, "Format the output as JSON")
+	showDiffOutput   = showFlagSet.Bool("diff", false, "Show the current diff for the review")
+	showDiffOptions  = showFlagSet.String("diff-opts", "", "Options to pass to the diff tool; can only be used with the --diff option")
+	showInlineOutput = showFlagSet.Bool("inline", false, "Show comments inline with the diff")
 )
 
 // showDetachedComments prints the current code review.
@@ -90,6 +91,13 @@ func showReview(repo repository.Repo, args []string) error {
 			diffArgs = strings.Split(*showDiffOptions, ",")
 		}
 		return output.PrintDiff(r, diffArgs...)
+	}
+	if *showInlineOutput {
+		var diffArgs []string
+		if *showDiffOptions != "" {
+			diffArgs = strings.Split(*showDiffOptions, ",")
+		}
+		return output.PrintInlineComments(r, diffArgs...)
 	}
 	return output.PrintDetails(r)
 }

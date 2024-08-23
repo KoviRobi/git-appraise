@@ -208,6 +208,97 @@ func PrintComments(repo repository.Repo, c []review.CommentThread) error {
 	return printCommentsWithIndent(repo, c, "  ")
 }
 
+// Separates comments into commit message comments and file comments. A line
+// number of 0 for either means the comment belongs to the whole file, since
+// line 0 is invalid. The line numbers indicate the end line rather than the
+// start line (but if there is only start line then it is the start line). This
+// way you can display comments just below what they are commenting on.
+func SeparateComments(threads []review.CommentThread,
+	commitThreads map[uint32][]review.CommentThread,
+	lineThreads map[string]map[uint32][]review.CommentThread) {
+	for _, thread := range threads {
+		c := thread.Comment
+		var commentLine uint32
+		if c.Location != nil && c.Location.Range != nil {
+			// No line is `0` so max picks start line if there is no end line.
+			commentLine = max(c.Location.Range.StartLine, c.Location.Range.EndLine)
+		}
+		if c.Location == nil || c.Location.Path == "" {
+			commentThread := commitThreads[commentLine]
+			commentThread = append(commentThread, thread)
+			commitThreads[commentLine] = commentThread
+		} else {
+			fileThread := lineThreads[c.Location.Path]
+			if fileThread == nil {
+				fileThread = make(map[uint32][]review.CommentThread)
+			}
+			lineThread := fileThread[commentLine]
+			lineThread = append(lineThread, thread)
+			fileThread[commentLine] = lineThread
+			lineThreads[c.Location.Path] = fileThread
+		}
+	}
+}
+
+func PrintInlineComments(r *review.Review, diffArgs ...string) error {
+	var baseCommit, headCommit string
+	baseCommit, err := r.GetBaseCommit()
+	if err != nil {
+		return err
+	}
+	headCommit, err = r.GetHeadCommit()
+	if err != nil {
+		return err
+	}
+	diffFiles, err := r.Repo.ParsedDiff(baseCommit, headCommit, diffArgs...)
+	if err != nil {
+		return err
+	}
+
+	var commitThreads = make(map[uint32][]review.CommentThread)
+	var lineThreads = make(map[string]map[uint32][]review.CommentThread)
+	SeparateComments(r.Summary.Comments, commitThreads, lineThreads)
+
+	// Line 0 is whole commit message comment
+	// TODO: Print commit message
+	// TODO: Rest of commit threads
+	// TODO: Comments with empty file but line numbers are comments on that range
+	// on the commit message?
+	for _, thread := range commitThreads[0] {
+		showSubThread(r.Repo, thread, "")
+	}
+	for _, file := range diffFiles {
+		// TODO: Are comments on old name, new name, or either?
+		fmt.Printf(commentLocationTemplate, "", file.NewName, headCommit)
+		// Line 0 is whole file comment
+		for _, thread := range lineThreads[file.NewName][0] {
+			showSubThread(r.Repo, thread, "| ")
+		}
+		for _, frag := range file.Fragments {
+			rhs := frag.NewPosition
+			fmt.Printf("@@ -%d,%d +%d,%d @@%s",
+				frag.OldPosition, frag.OldLines, rhs, frag.NewLines, frag.Comment)
+			for _, line := range frag.Lines {
+				fmt.Printf("%s%s", line.Op.String(), line.Line)
+				if line.Line[len(line.Line)-1] != '\n' {
+					fmt.Println()
+				}
+
+				if line.Op == repository.OpContext || line.Op == repository.OpAdd {
+					// TODO: Is RHS ever < 0? Why is it an int64_t?
+					if rhs >= 0 {
+						for _, thread := range lineThreads[file.NewName][uint32(rhs)] {
+							showSubThread(r.Repo, thread, "|")
+						}
+					}
+					rhs++
+				}
+			}
+		}
+	}
+	return nil
+}
+
 // printComments prints all of the comments for the review, with snippets of the preceding source code.
 func printComments(r *review.Review) error {
 	fmt.Printf(commentSummaryTemplate, len(r.Comments))
