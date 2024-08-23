@@ -54,8 +54,7 @@ const (
 	commentTemplate = `comment: %s
 author: %s
 time:   %s
-status: %s
-%s`
+status: %s`
 	// Template for displaying the summary of the comment threads for a review
 	commentSummaryTemplate = `  comments (%d threads):
 `
@@ -170,13 +169,14 @@ func showSubThread(repo repository.Repo, thread review.CommentThread, indent str
 			statusString = "needs work"
 		}
 	}
-	comment := thread.Comment
 	threadHash := thread.Hash
-	timestamp := reformatTimestamp(comment.Timestamp)
-	commentSummary := fmt.Sprintf(indent+commentTemplate, threadHash, comment.Author, timestamp, statusString, comment.Description)
+	timestamp := reformatTimestamp(thread.Comment.Timestamp)
+	commentSummary := fmt.Sprintf(indent+commentTemplate, threadHash, thread.Comment.Author, timestamp, statusString)
 	indent = indent + "  "
 	indentedSummary := strings.Replace(commentSummary, "\n", "\n"+indent, -1)
+	indentedDescription := Reflow(thread.Comment.Description, indent, 80)
 	fmt.Println(indentedSummary)
+	fmt.Println(indentedDescription)
 	for _, child := range thread.Children {
 		err := showSubThread(repo, child, indent)
 		if err != nil {
