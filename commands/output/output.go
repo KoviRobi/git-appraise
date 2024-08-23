@@ -274,25 +274,49 @@ func PrintInlineComments(r *review.Review, diffArgs ...string) error {
 		for _, thread := range lineThreads[file.NewName][0] {
 			showSubThread(r.Repo, thread, "| ")
 		}
+		var prevLine int64 = 1
 		for _, frag := range file.Fragments {
+			lhs := frag.OldPosition
 			rhs := frag.NewPosition
-			fmt.Printf("@@ -%d,%d +%d,%d @@%s",
-				frag.OldPosition, frag.OldLines, rhs, frag.NewLines, frag.Comment)
+			maxLine := max(lhs+frag.OldLines, rhs+frag.NewLines)
+			digits := 0
+			for maxLine != 0 {
+				maxLine /= 10
+				digits++
+			}
+			if rhs != prevLine {
+				fmt.Println("...")
+			}
 			for _, line := range frag.Lines {
-				fmt.Printf("%s%s", line.Op.String(), line.Line)
-				if line.Line[len(line.Line)-1] != '\n' {
-					fmt.Println()
+				switch line.Op {
+				case repository.OpContext:
+					{
+						fmt.Printf("%.*d %.*d", digits, lhs, digits, rhs)
+						lhs++
+						rhs++
+					}
+				case repository.OpAdd:
+					{
+						fmt.Printf("%*.s %.*d", digits, "", digits, rhs)
+						rhs++
+					}
+				case repository.OpDelete:
+					{
+						fmt.Printf("%.*d %*.s", digits, lhs, digits, "")
+						lhs++
+					}
 				}
+				fmt.Printf("%s%s\n", line.Op.String(), strings.Trim(line.Line, "\n"))
 
 				if line.Op == repository.OpContext || line.Op == repository.OpAdd {
-					// TODO: Is RHS ever < 0? Why is it an int64_t?
-					if rhs >= 0 {
-						for _, thread := range lineThreads[file.NewName][uint32(rhs)] {
-							showSubThread(r.Repo, thread, "|")
+					if rhs-1 >= 0 {
+						for _, thread := range lineThreads[file.NewName][uint32(rhs-1)] {
+							indent := strings.Repeat(" ", 2*digits+1)
+							showSubThread(r.Summary.Revision, r.Repo, thread, indent+"| ")
 						}
 					}
-					rhs++
 				}
+				prevLine = rhs
 			}
 		}
 	}
