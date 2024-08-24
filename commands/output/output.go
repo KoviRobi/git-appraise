@@ -241,16 +241,8 @@ func SeparateComments(threads []review.CommentThread,
 }
 
 func PrintInlineComments(r *review.Review, diffArgs ...string) error {
-	var baseCommit, headCommit string
-	baseCommit, err := r.GetBaseCommit()
-	if err != nil {
-		return err
-	}
-	headCommit, err = r.GetHeadCommit()
-	if err != nil {
-		return err
-	}
-	diffFiles, err := r.Repo.ParsedDiff(baseCommit, headCommit, diffArgs...)
+	headCommit := r.Summary.Revision
+	diffFiles, err := r.Repo.ParsedDiff(headCommit + "^", headCommit, diffArgs...)
 	if err != nil {
 		return err
 	}
