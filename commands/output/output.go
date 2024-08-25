@@ -55,9 +55,16 @@ const (
 author: %s
 time:   %s
 status: %s`
+
 	// Template for displaying the summary of the comment threads for a review
 	commentSummaryTemplate = `  comments (%d threads):
 `
+
+	// Template for printing a single commit
+	commitTemplate = `commit: %s
+author: %s
+time:   %s`
+
 	// Number of lines of context to print for inline comments
 	contextLineCount = 5
 )
@@ -241,7 +248,18 @@ func SeparateComments(threads []review.CommentThread,
 }
 
 func PrintInlineComments(r *review.Review, diffArgs ...string) error {
-	headCommit := r.Summary.Revision
+	headCommit, err := r.Repo.GetCommitHash(r.Summary.Revision)
+	if err != nil {
+		return err
+	}
+	commitDetails, err := r.Repo.GetCommitDetails(headCommit)
+	if err != nil {
+		return err
+	}
+	commitMessage, err := r.Repo.GetCommitMessage(headCommit)
+	if err != nil {
+		return err
+	}
 	diffFiles, err := r.Repo.ParsedDiff(headCommit + "^", headCommit, diffArgs...)
 	if err != nil {
 		return err
@@ -256,9 +274,18 @@ func PrintInlineComments(r *review.Review, diffArgs ...string) error {
 	// TODO: Rest of commit threads
 	// TODO: Comments with empty file but line numbers are comments on that range
 	// on the commit message?
+	fmt.Printf(commitTemplate, headCommit, commitDetails.Author, commitDetails.AuthorTime)
 	for _, thread := range commitThreads[0] {
 		showSubThread(r.Repo, thread, "")
 	}
+	commitMessageLines := strings.Split(commitMessage, "\n")
+	for i, line := range commitMessageLines {
+		fmt.Println(line)
+		for _, thread := range commitThreads[uint32(i+1)] {
+			showSubThread(r.Repo, thread, "")
+		}
+	}
+
 	for _, file := range diffFiles {
 		// TODO: Are comments on old name, new name, or either?
 		fmt.Printf(commentLocationTemplate, "", file.NewName, headCommit)
