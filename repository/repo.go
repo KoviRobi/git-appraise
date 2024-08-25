@@ -164,17 +164,17 @@ type DiffLine struct {
 type DiffFragment struct {
 	Comment string
 
-	OldPosition int64
-	OldLines    int64
+	OldPosition uint64
+	OldLines    uint64
 
-	NewPosition int64
-	NewLines    int64
+	NewPosition uint64
+	NewLines    uint64
 
-	LinesAdded   int64
-	LinesDeleted int64
+	LinesAdded   uint64
+	LinesDeleted uint64
 
-	LeadingContext  int64
-	TrailingContext int64
+	LeadingContext  uint64
+	TrailingContext uint64
 
 	Lines []DiffLine
 }

@@ -266,7 +266,7 @@ func PrintInlineComments(r *review.Review, diffArgs ...string) error {
 		for _, thread := range lineThreads[file.NewName][0] {
 			showSubThread(r.Repo, thread, "| ")
 		}
-		var prevLine int64 = 1
+		var prevLine uint64 = 1
 		for _, frag := range file.Fragments {
 			lhs := frag.OldPosition
 			rhs := frag.NewPosition

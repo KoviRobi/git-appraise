@@ -363,14 +363,14 @@ func (repo *GitRepo) ParsedDiff(left, right string, diffArgs ...string) ([]FileD
 
 			fragments = append(fragments, DiffFragment{
 				Comment: fragment.Comment,
-				OldPosition: fragment.OldPosition,
-				OldLines: fragment.OldLines,
-				NewPosition: fragment.NewPosition,
-				NewLines: fragment.NewLines,
-				LinesAdded: fragment.LinesAdded,
-				LinesDeleted: fragment.LinesDeleted,
-				LeadingContext: fragment.LeadingContext,
-				TrailingContext: fragment.TrailingContext,
+				OldPosition: uint64(fragment.OldPosition),
+				OldLines: uint64(fragment.OldLines),
+				NewPosition: uint64(fragment.NewPosition),
+				NewLines: uint64(fragment.NewLines),
+				LinesAdded: uint64(fragment.LinesAdded),
+				LinesDeleted: uint64(fragment.LinesDeleted),
+				LeadingContext: uint64(fragment.LeadingContext),
+				TrailingContext: uint64(fragment.TrailingContext),
 				Lines: lines,
 			})
 		}
