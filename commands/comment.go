@@ -71,9 +71,6 @@ func validateArgs(repo repository.Repo, args []string, threads []review.CommentT
 	if *commentLgtm && *commentNmw {
 		return errors.New("You cannot combine the flags -lgtm and -nmw.")
 	}
-	if commentLocation != (comment.Range{}) && *commentFile == "" {
-		return errors.New("Specifying a line number with the -l flag requires that you also specify a file name with the -f flag.")
-	}
 	if *commentParent != "" && !commentHashExists(*commentParent, threads) {
 		return errors.New("There is no matching parent comment.")
 	}
@@ -101,10 +98,10 @@ func buildCommentFromFlags(repo repository.Repo, commentedUponCommit string) (*c
 	}
 	if *commentFile != "" {
 		location.Path = *commentFile
-		location.Range = &commentLocation
-		if err := location.Check(repo); err != nil {
-			return nil, fmt.Errorf("Unable to comment on the given location: %v", err)
-		}
+	}
+	location.Range = &commentLocation
+	if err := location.Check(repo); err != nil {
+		return nil, fmt.Errorf("Unable to comment on the given location: %v", err)
 	}
 
 	userEmail, err := repo.GetUserEmail()
