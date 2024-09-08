@@ -326,7 +326,16 @@ func (repo *GitRepo) Diff(left, right string, diffArgs ...string) (string, error
 	return repo.runGitCommand(args...)
 }
 
-func (repo *GitRepo) ParsedDiff(left, right string, diffArgs ...string) ([]FileDiff, error)  {
+func (repo *GitRepo) Diff1(commit string, diffArgs ...string) (string, error) {
+	args := []string{"show", "--format=", "--patch"}
+	args = append(args, diffArgs...)
+	args = append(args, commit)
+	args = append(args, "--")
+	return repo.runGitCommand(args...)
+}
+
+// Diff computes the diff between two given commits.
+func (repo *GitRepo) ParsedDiff(left, right string, diffArgs ...string) ([]FileDiff, error) {
 	if !slices.Contains(diffArgs, "--no-ext-diff") {
 		diffArgs = append(diffArgs, "--no-ext-diff")
 	}
@@ -335,6 +344,22 @@ func (repo *GitRepo) ParsedDiff(left, right string, diffArgs ...string) ([]FileD
 		return nil, err
 	}
 
+	return parsedDiff(diff)
+}
+
+func (repo *GitRepo) ParsedDiff1(commit string, diffArgs ...string) ([]FileDiff, error) {
+	if !slices.Contains(diffArgs, "--no-ext-diff") {
+		diffArgs = append(diffArgs, "--no-ext-diff")
+	}
+	diff, err := repo.Diff1(commit, diffArgs...)
+	if err != nil {
+		return nil, err
+	}
+
+	return parsedDiff(diff)
+}
+
+func parsedDiff(diff string) ([]FileDiff, error) {
 	files, _, err := gitdiff.Parse(strings.NewReader(diff))
 	if err != nil {
 		return nil, err

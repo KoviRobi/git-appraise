@@ -260,7 +260,7 @@ func PrintInlineComments(r *review.Review, diffArgs ...string) error {
 	if err != nil {
 		return err
 	}
-	diffFiles, err := r.Repo.ParsedDiff(headCommit + "^", headCommit, diffArgs...)
+	diffFiles, err := r.Repo.ParsedDiff1(headCommit, diffArgs...)
 	if err != nil {
 		return err
 	}

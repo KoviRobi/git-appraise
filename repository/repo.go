@@ -266,8 +266,14 @@ type Repo interface {
 	// Diff computes the diff between two given commits.
 	Diff(left, right string, diffArgs ...string) (string, error)
 
+	// Diff1 computes the diff for a single commit.
+	Diff1(commit string, diffArgs ...string) (string, error)
+
 	// ParsedDiff computes the diff between two given commits.
 	ParsedDiff(left, right string, diffArgs ...string) ([]FileDiff, error)
+
+	// ParsedDiff1 computes the diff for a single commit.
+	ParsedDiff1(commit string, diffArgs ...string) ([]FileDiff, error)
 
 	// Show returns the contents of the given file at the given commit.
 	Show(commit, path string) (string, error)

@@ -681,15 +681,11 @@ func (r *Review) ListCommits() ([]string, error) {
 
 // GetDiff returns the diff for a review.
 func (r *Review) GetDiff(diffArgs ...string) (string, error) {
-	var baseCommit, headCommit string
-	baseCommit, err := r.GetBaseCommit()
-	if err == nil {
-		headCommit, err = r.GetHeadCommit()
+	headCommit, err := r.Repo.GetCommitHash(r.Summary.Revision)
+	if err != nil {
+		return headCommit, err
 	}
-	if err == nil {
-		return r.Repo.Diff(baseCommit, headCommit, diffArgs...)
-	}
-	return "", err
+  return r.Repo.Diff1(headCommit, diffArgs...)
 }
 
 // AddComment adds the given comment to the review.

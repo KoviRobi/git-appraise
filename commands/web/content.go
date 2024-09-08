@@ -266,7 +266,7 @@ func (repoDetails *RepoDetails) WriteReviewTemplate(branch uint64, reviewID stri
 		return err
 	}
 	// Show only the review commit
-	diffs, err := reviewDetails.Repo.ParsedDiff(commit + "^", commit)
+	diffs, err := reviewDetails.Repo.ParsedDiff1(commit)
 	if err != nil {
 		return err
 	}
