@@ -1,3 +1,11 @@
+# Note about this fork
+
+This branch of this fork is slightly diverging from the upstream
+[https://github.com/google/git-appraise](https://github.com/google/git-appraise)
+as I have made modifications to it for the purpose of my experimental book
+[kovirobi.github.io/secret-chord](https://kovirobi.github.io/secret-chord), head over
+there to have a look at it.
+
 # Distributed Code Review For Git
 [![Build Status](https://travis-ci.org/google/git-appraise.svg?branch=master)](https://travis-ci.org/google/git-appraise)
 
