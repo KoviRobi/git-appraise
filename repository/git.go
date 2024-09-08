@@ -155,8 +155,8 @@ func (repo *GitRepo) GetDataDir() (string, error) {
 
 // GetRepoStateHash returns a hash which embodies the entire current state of a repository.
 func (repo *GitRepo) GetRepoStateHash() (string, error) {
-	stateSummary, error := repo.runGitCommand("show-ref")
-	return fmt.Sprintf("%x", sha1.Sum([]byte(stateSummary))), error
+	stateSummary, err := repo.runGitCommand("show-ref")
+	return fmt.Sprintf("%x", sha1.Sum([]byte(stateSummary))), err
 }
 
 // GetUserEmail returns the email address that the user has used to configure git.

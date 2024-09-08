@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>{{.Title}}</title>
+		<link rel="stylesheet" href="{{paths.Css}}"/>
+	</head>
+	<body>
+		<h1 class="title">{{.Title}}</h3>
+		<h2 class="subtitle">{{.Subtitle}}</h4>
+		{{mdToHTML .Description}}
+		<ol>
+			{{range $i, $v := .Branches}}
+				<a href="{{paths.Branch (u64 $i)}}">
+					<li>
+						<h3 class="title">{{.Title}}
+						{{if or (gt .OpenReviewCount 0) (gt .ClosedReviewCount 0)}}
+							({{.OpenReviewCount}}
+							{{- if gt .ClosedReviewCount 0 -}}
+							/{{.ClosedReviewCount}}
+							{{- end -}})
+						{{end}}
+						</h3>
+						<h4 class="subtitle">{{.Subtitle}}</h4>
+					</li>
+				</a>
+			{{end}}
+		</ol>
+	</body>
+</html>

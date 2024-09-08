@@ -1,0 +1,214 @@
+/** Solarized colors:
+
+	$base03:    #002b36;
+	$base02:    #073642;
+	$base01:    #586e75;
+	$base00:    #657b83;
+	$base0:     #839496;
+	$base1:     #93a1a1;
+	$base2:     #eee8d5;
+	$base3:     #fdf6e3;
+	$yellow:    #b58900;
+	$orange:    #cb4b16;
+	$red:       #dc322f;
+	$magenta:   #d33682;
+	$violet:    #6c71c4;
+	$blue:      #268bd2;
+	$cyan:      #2aa198;
+	$green:     #859900;
+
+*/
+
+/* Dark --------------------------------------------------------------------- */
+
+@media (prefers-color-scheme: dark) {
+	body {
+		background: black;
+		color: white;
+	}
+	a {
+		color: white;
+	}
+	.commit > .message.line-1 {
+		color: #dc322f40;
+	}
+	div.comment {
+		border-left-color: #839496;
+	}
+	.review-comments {
+		border-color: #839496;
+	}
+	.filename {
+		background: black;
+	}
+	.diff {
+		background: #002b36;
+	}
+	.hunk {
+		background: #002b36;
+	}
+	.diff .delete {
+		background: #dc322f40;
+	}
+	.diff .add {
+		background: #85990040;
+		color: #eee8d5;
+	}
+	.diff .code {
+		border-left-color: #839496;
+	}
+	.diff .thread {
+		border-left-color: #839496;
+	}
+}
+
+/* Light -------------------------------------------------------------------- */
+
+@media (prefers-color-scheme: light) {
+	body  {
+		background: white;
+		color: black;
+	}
+	a {
+		color: black;
+	}
+	.commit > .message.line-1 {
+		color: #dc322f40;
+	}
+	div.comment {
+		border-left-color: #657b83;
+	}
+	.review-comments {
+		border-color: #657b83;
+	}
+	.filename {
+		background: white;
+	}
+	.diff {
+		background: #fdf6e3;
+		color: #073642;
+	}
+	.hunk {
+		background: #fdf6e3;
+	}
+	.diff .delete {
+		background: #dc322f40;
+	}
+	.diff .add {
+		background: #85990040;
+	}
+	.diff .code {
+		border-left-color: #657b83;
+	}
+	.diff .thread {
+		border-left-color: #657b83;
+	}
+}
+
+/* Colour irrelevant -------------------------------------------------------- */
+
+body {
+	width: 100ex; /* Around 100 characters */
+	margin: auto;
+}
+div.file {
+	width: inherit;
+}
+.commit {
+	border: 1pt solid;
+	border-radius: 1em;
+}
+.commit > .metadata {
+	border-bottom: 1pt solid;
+	padding: 1em;
+}
+.commit > .message {
+	font-family: "Serif";
+	font-size: medium;
+	padding: 0 1em;
+	min-height: 0.1em;
+}
+.commit > .message.line-0 {
+	font-size: large;
+	font-weight: bold;
+}
+.commit > .comment {
+	margin: 1em;
+}
+.hash {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.hash::before {
+	content: "Commit: ";
+	white-space: nowrap;
+}
+.author::before {
+	content: "Author: ";
+}
+.filename {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	font-weight: normal;
+	padding: 0.4em 0 0.2em 0;
+}
+.diff {
+	border-collapse: collapse;
+	border-radius: 1em;
+	/* Fix diff add/del background spilling over rounded border */
+	overflow: hidden;
+	width: inherit;
+}
+.linecontent {
+	width: 95%;
+}
+/** Chromium engine bug, doesn't  work on <th>
+.diff .hunk {
+	position: sticky;
+	top: 1em;
+}
+*/
+.diff .code {
+	border-left-width: 1pt;
+	border-left-style: solid;
+}
+.diff .thread {
+	border-left-width: 1pt;
+	border-left-style: dashed;
+}
+.diff pre, .diff span {
+	margin: 2pt;
+}
+.diff span {
+	padding: 0pt 2pt;
+}
+pre {
+	/* For some reason font seems smaller -- fix font? */
+	/* In Firefox, not in Chrome? */
+	font-size: large;
+}
+pre.message {
+	white-space: pre-wrap;
+}
+pre.line {
+	text-overflow: scroll;
+}
+.thread {
+	padding-left: 1ex;
+}
+div.comment {
+	border-left-width: 1pt;
+	border-left-style: solid;
+	padding-left: 1em;
+}
+.review-comments::before {
+	content: "🗪";
+}
+.review-comments {
+	border-width: 1pt;
+	border-style: solid;
+	border-radius: 5pt;
+	font-size: small;
+	padding: 0.2em;
+}

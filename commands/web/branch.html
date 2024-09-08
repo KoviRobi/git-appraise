@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>{{.RepoDetails.Title}} {{.BranchDetails.Title}}</title>
+		<link rel="stylesheet" href="{{paths.Css}}"/>
+	</head>
+	<body>
+		<h1>
+		<a href="{{paths.Repo}}">{{.RepoDetails.Title}}</a>
+			→
+			“{{.BranchDetails.Title}}”
+		</h1>
+		{{mdToHTML .BranchDetails.Description}}
+		{{if .BranchDetails.OpenReviews}}
+			<h1>Open Reviews ({{.BranchDetails.OpenReviewCount}})</h1>
+			<ol class="open">
+				{{range .BranchDetails.OpenReviews}}
+						<a href="{{paths.Review $.BranchNum .Revision}}">
+						<li class="open review">
+							<span class="open review review-description">{{.Request.Description}}</span>
+							<span class="open review review-comments">{{len .Comments}}</span>
+						</li>
+					</a>
+				{{end}}
+			</ol>
+		{{end}}
+		{{if .BranchDetails.ClosedReviews}}
+			<h1>Closed Reviews ({{.BranchDetails.ClosedReviewCount}})</h1>
+			<ol class="closed">
+				{{range .BranchDetails.ClosedReviews}}
+					<a href="{{paths.Review $.BranchNum .Revision}}">
+						<li class="closed review">
+							<span class="closed review review-description">{{.Request.Description}}</span>
+							<span class="closed review review-comments">{{len .Comments}}</span>
+						</li>
+					</a>
+				{{end}}
+			</ol>
+		{{end}}
+	</body>
+</html>
