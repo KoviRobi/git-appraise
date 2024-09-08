@@ -216,7 +216,7 @@ func (repo *GitRepo) GetHeadRef() (string, error) {
 
 // GetCommitHash returns the hash of the commit pointed to by the given ref.
 func (repo *GitRepo) GetCommitHash(ref string) (string, error) {
-	return repo.runGitCommand("show", "-s", "--format=%H", ref)
+	return repo.runGitCommand("show", "-s", "--format=%H", ref, "--")
 }
 
 // ResolveRefCommit returns the commit pointed to by the given ref, which may be a remote ref.
@@ -251,12 +251,12 @@ func (repo *GitRepo) ResolveRefCommit(ref string) (string, error) {
 
 // GetCommitMessage returns the message stored in the commit pointed to by the given ref.
 func (repo *GitRepo) GetCommitMessage(ref string) (string, error) {
-	return repo.runGitCommand("show", "-s", "--format=%B", ref)
+	return repo.runGitCommand("show", "-s", "--format=%B", ref, "--")
 }
 
 // GetCommitTime returns the commit time of the commit pointed to by the given ref.
 func (repo *GitRepo) GetCommitTime(ref string) (string, error) {
-	return repo.runGitCommand("show", "-s", "--format=%ct", ref)
+	return repo.runGitCommand("show", "-s", "--format=%ct", ref, "--")
 }
 
 // GetLastParent returns the last parent of the given commit (as ordered by git).
@@ -271,7 +271,7 @@ func (repo GitRepo) GetCommitDetails(ref string) (*CommitDetails, error) {
 		if err != nil {
 			return ""
 		}
-		result, err = repo.runGitCommand("show", "-s", ref, fmt.Sprintf("--format=tformat:%s", formatString))
+		result, err = repo.runGitCommand("show", "-s", fmt.Sprintf("--format=tformat:%s", formatString), ref, "--")
 		return result
 	}
 
@@ -325,7 +325,7 @@ func (repo *GitRepo) Diff(left, right string, diffArgs ...string) (string, error
 
 // Show returns the contents of the given file at the given commit.
 func (repo *GitRepo) Show(commit, path string) (string, error) {
-	return repo.runGitCommand("show", fmt.Sprintf("%s:%s", commit, path))
+	return repo.runGitCommand("show", fmt.Sprintf("%s:%s", commit, path), "--")
 }
 
 // SwitchToRef changes the currently-checked-out ref.
@@ -684,7 +684,7 @@ func (repo *GitRepo) SetRef(ref, newCommitHash, previousCommitHash string) error
 // GetNotes uses the "git" command-line tool to read the notes from the given ref for a given revision.
 func (repo *GitRepo) GetNotes(notesRef, revision string) []Note {
 	var notes []Note
-	rawNotes, err := repo.runGitCommand("notes", "--ref", notesRef, "show", revision)
+	rawNotes, err := repo.runGitCommand("notes", "--ref", notesRef, "show", revision, "--")
 	if err != nil {
 		// We just assume that this means there are no notes
 		return nil
