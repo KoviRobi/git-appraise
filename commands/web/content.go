@@ -11,9 +11,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/git-appraise/commands/output"
-	"github.com/google/git-appraise/repository"
-	"github.com/google/git-appraise/review"
+	"github.com/KoviRobi/git-appraise/commands/output"
+	"github.com/KoviRobi/git-appraise/repository"
+	"github.com/KoviRobi/git-appraise/review"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"

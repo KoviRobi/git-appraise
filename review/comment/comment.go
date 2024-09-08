@@ -25,8 +25,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/git-appraise/repository"
-	"github.com/google/git-appraise/review/gpg"
+	"github.com/KoviRobi/git-appraise/repository"
+	"github.com/KoviRobi/git-appraise/review/gpg"
 )
 
 // Ref defines the git-notes ref that we expect to contain review comments.

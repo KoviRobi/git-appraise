@@ -21,9 +21,9 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/google/git-appraise/commands/output"
-	"github.com/google/git-appraise/repository"
-	"github.com/google/git-appraise/review"
+	"github.com/KoviRobi/git-appraise/commands/output"
+	"github.com/KoviRobi/git-appraise/repository"
+	"github.com/KoviRobi/git-appraise/review"
 )
 
 var listFlagSet = flag.NewFlagSet("list", flag.ExitOnError)

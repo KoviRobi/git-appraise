@@ -18,7 +18,7 @@ limitations under the License.
 package commands
 
 import (
-	"github.com/google/git-appraise/repository"
+	"github.com/KoviRobi/git-appraise/repository"
 )
 
 const notesRefPattern = "refs/notes/devtools/*"

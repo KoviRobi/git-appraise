@@ -1,4 +1,4 @@
-module github.com/google/git-appraise
+module github.com/KoviRobi/git-appraise
 
 go 1.21
 

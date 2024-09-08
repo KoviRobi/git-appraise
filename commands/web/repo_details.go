@@ -8,8 +8,8 @@ import (
 	"slices"
 	"sort"
 
-	"github.com/google/git-appraise/repository"
-	"github.com/google/git-appraise/review"
+	"github.com/KoviRobi/git-appraise/repository"
+	"github.com/KoviRobi/git-appraise/review"
 )
 
 type BranchDetails struct {

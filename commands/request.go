@@ -23,10 +23,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/git-appraise/commands/input"
-	"github.com/google/git-appraise/repository"
-	"github.com/google/git-appraise/review/gpg"
-	"github.com/google/git-appraise/review/request"
+	"github.com/KoviRobi/git-appraise/commands/input"
+	"github.com/KoviRobi/git-appraise/repository"
+	"github.com/KoviRobi/git-appraise/review/gpg"
+	"github.com/KoviRobi/git-appraise/review/request"
 )
 
 // Template for the "request" subcommand's output.

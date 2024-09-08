@@ -21,11 +21,11 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/google/git-appraise/commands/input"
-	"github.com/google/git-appraise/repository"
-	"github.com/google/git-appraise/review"
-	"github.com/google/git-appraise/review/comment"
-	"github.com/google/git-appraise/review/gpg"
+	"github.com/KoviRobi/git-appraise/commands/input"
+	"github.com/KoviRobi/git-appraise/repository"
+	"github.com/KoviRobi/git-appraise/review"
+	"github.com/KoviRobi/git-appraise/review/comment"
+	"github.com/KoviRobi/git-appraise/review/gpg"
 )
 
 var rejectFlagSet = flag.NewFlagSet("reject", flag.ExitOnError)

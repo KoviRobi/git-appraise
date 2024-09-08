@@ -8,9 +8,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/google/git-appraise/commands/web"
-	"github.com/google/git-appraise/repository"
-	"github.com/google/git-appraise/review"
+	"github.com/KoviRobi/git-appraise/commands/web"
+	"github.com/KoviRobi/git-appraise/repository"
+	"github.com/KoviRobi/git-appraise/review"
 )
 
 var webFlagSet = flag.NewFlagSet("web", flag.ExitOnError)
