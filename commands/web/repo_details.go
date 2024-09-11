@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"slices"
 	"sort"
+	"strings"
 
 	"github.com/KoviRobi/git-appraise/repository"
 	"github.com/KoviRobi/git-appraise/review"
@@ -56,12 +57,14 @@ func ParseDescription(text string) (title, subtitle, description string) {
 }
 
 func (repoDetails *RepoDetails) UpdateRepoDescription() {
-	repoPath := repoDetails.Repo.GetPath()
-	repoDetails.Title = path.Base(repoPath)
 
 	description, err := repoDetails.Repo.Show("HEAD", descriptionPath)
 	if err == nil {
 		repoDetails.Title, repoDetails.Subtitle, repoDetails.Description = ParseDescription(string(description))
+	}
+	if repoDetails.Title == "" {
+		repoPath := repoDetails.Repo.GetPath()
+		repoDetails.Title = path.Base(repoPath)
 	}
 }
 
@@ -74,10 +77,13 @@ func NewRepoDetails(repo repository.Repo) (*RepoDetails, error) {
 
 // GetBranchDetails constructs a concise summary of the branch.
 func (repoDetails *RepoDetails) GetBranchDetails(branch string) *BranchDetails {
-	details := &BranchDetails{Ref: branch, Title: branch}
+	details := &BranchDetails{Ref: branch}
 	description, err := repoDetails.Repo.Show(branch, descriptionPath)
 	if err == nil {
 		details.Title, details.Subtitle, details.Description = ParseDescription(description)
+	}
+	if details.Title == "" {
+		details.Title = strings.TrimPrefix(branch, "refs/heads/")
 	}
 	return details
 }
