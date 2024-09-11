@@ -59,9 +59,9 @@
 							{{end}}
 							{{if isRHS .Op}}
 								{{range index $.LineThreads $newName $rhs}}
-									<tr>
+									<tr class="thread">
 										<td class="linenumbers" colspan=2></td>
-										<td class="linecontent" class="thread">{{template "subThread" .}}</td>
+										<td class="linecontent">{{template "subThread" .}}</td>
 									</tr>
 								{{end}}
 								{{$rhs = addu64 $rhs 1}}

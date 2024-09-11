@@ -32,7 +32,7 @@
 	.commit > .message.line-1 {
 		color: #dc322f40;
 	}
-	div.comment {
+	.comment {
 		border-left-color: #839496;
 	}
 	.review-comments {
@@ -75,7 +75,7 @@
 	.commit > .message.line-1 {
 		color: #dc322f40;
 	}
-	div.comment {
+	.comment {
 		border-left-color: #657b83;
 	}
 	.review-comments {
@@ -173,9 +173,10 @@ div.file {
 	border-left-width: 1pt;
 	border-left-style: solid;
 }
-.diff .thread {
+.thread .linecontent, .hunk .linecontent {
 	border-left-width: 1pt;
 	border-left-style: dashed;
+	padding-left: 1ex;
 }
 .diff pre, .diff span {
 	margin: 2pt;
@@ -193,9 +194,6 @@ pre.message {
 }
 pre.line {
 	text-overflow: scroll;
-}
-.thread {
-	padding-left: 1ex;
 }
 div.comment {
 	border-left-width: 1pt;
