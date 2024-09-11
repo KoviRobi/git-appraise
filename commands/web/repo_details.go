@@ -1,8 +1,6 @@
 package web
 
 import (
-	"fmt"
-	"os"
 	"path"
 	"regexp"
 	"slices"
@@ -61,8 +59,7 @@ func (repoDetails *RepoDetails) UpdateRepoDescription() {
 	repoPath := repoDetails.Repo.GetPath()
 	repoDetails.Title = path.Base(repoPath)
 
-	descriptionFile := fmt.Sprintf("%s/%s", repoPath, descriptionPath)
-	description, err := os.ReadFile(descriptionFile)
+	description, err := repoDetails.Repo.Show("HEAD", descriptionPath)
 	if err == nil {
 		repoDetails.Title, repoDetails.Subtitle, repoDetails.Description = ParseDescription(string(description))
 	}
