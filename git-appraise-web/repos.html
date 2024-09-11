@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>Repositories</title>
+		<link rel="stylesheet" href="{{paths.Css}}"/>
+	</head>
+	<body>
+		<h1 class="title">Repositories</h3>
+		<ul>
+			{{range .Repos}}
+				<a href="{{.Path}}/{{paths.Repo}}">
+					<li>
+						<h3 class="title">{{.Title}}</h3>
+						<h4 class="subtitle">{{.Subtitle}}</h4>
+					</li>
+				</a>
+				<a href="{{$.GitWeb}}/{{.Path}}">Git Web</a>
+			{{end}}
+		</ul>
+	</body>
+</html>
