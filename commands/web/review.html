@@ -1,10 +1,17 @@
 {{define "subThread"}}
 	<div class="comment">
-		<p class="author">{{.Comment.Author}}</p>
-		<p class="description">{{mdToHTML .Comment.Description}}</p>
-		{{range .Children}}
-			{{template "subThread" .}}
-		{{end}}
+		<p class="author">
+			{{.Comment.Author}}
+			<span class="resolved-{{.Comment.Resolved}}"></span>
+		</p>
+		<div class="content">
+			{{- if .Comment.Description -}}
+				<div class="description">{{mdToHTML .Comment.Description}}</div>
+			{{- end -}}
+			{{- range .Children -}}
+				{{template "subThread" .}}
+			{{- end -}}
+		</div>
 	</div>
 {{end}}
 <!DOCTYPE html>

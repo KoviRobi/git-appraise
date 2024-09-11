@@ -118,6 +118,12 @@ div.file {
 	border: 1pt solid;
 	border-radius: 1em;
 }
+.resolved-true::after {
+	content: "✅";
+}
+.resolved-false::after {
+	content: "❌";
+}
 .commit > .metadata {
 	border-bottom: 1pt solid;
 	padding: 1em;
@@ -195,7 +201,10 @@ pre.message {
 pre.line {
 	text-overflow: scroll;
 }
-div.comment {
+.comment .content:empty {
+	display: none;
+}
+.comment .content {
 	border-left-width: 1pt;
 	border-left-style: solid;
 	padding-left: 1em;
