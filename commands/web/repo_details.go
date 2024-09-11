@@ -67,7 +67,7 @@ func (repoDetails *RepoDetails) UpdateRepoDescription() {
 
 // NewRepoDetails constructs a RepoDetails instance from the given Repo instance.
 func NewRepoDetails(repo repository.Repo) (*RepoDetails, error) {
-	repoDetails := &RepoDetails{Repo: repo}
+	repoDetails := &RepoDetails{Path: repo.GetPath(), Repo: repo}
 	repoDetails.UpdateRepoDescription()
 	return repoDetails, nil
 }
