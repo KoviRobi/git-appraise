@@ -99,7 +99,7 @@ func mdToHTML(md []byte) []byte {
 	return html
 }
 
-func serveTemplate(v interface{}, p Paths, w io.Writer, name string, templ string) error {
+func ServeTemplate(v interface{}, p Paths, w io.Writer, name string, templ string) error {
 	tmpl := template.New(name)
 	tmpl = tmpl.Funcs(map[string]any{
 		"u64": func(i int) uint64 { return uint64(i) },
@@ -135,7 +135,7 @@ func serveTemplate(v interface{}, p Paths, w io.Writer, name string, templ strin
 	return err
 }
 
-func serveErrorTemplate(err error, code int, w http.ResponseWriter) {
+func ServeErrorTemplate(err error, code int, w http.ResponseWriter) {
 		http.Error(w, err.Error(), code)
 }
 
@@ -143,7 +143,7 @@ func (repoDetails *RepoDetails) ServeStyleSheet(w http.ResponseWriter, r *http.R
 	var writer bytes.Buffer
 	err := repoDetails.WriteStyleSheet(&writer)
 	if err != nil {
-		serveErrorTemplate(err, http.StatusInternalServerError, w)
+		ServeErrorTemplate(err, http.StatusInternalServerError, w)
 		return
 	}
 	w.Header().Set("Content-Type", "text/css; charset=utf-8")
@@ -159,12 +159,12 @@ func (repoDetails *RepoDetails) WriteStyleSheet(w io.Writer) error {
 // Lists branches
 func (repoDetails *RepoDetails) ServeRepoTemplate(w http.ResponseWriter, r *http.Request) {
 	if err := repoDetails.Update(); err != nil {
-		serveErrorTemplate(err, http.StatusInternalServerError, w)
+		ServeErrorTemplate(err, http.StatusInternalServerError, w)
 		return
 	}
 	var writer bytes.Buffer
 	if err := repoDetails.WriteRepoTemplate(ServePaths{}, &writer); err != nil {
-		serveErrorTemplate(err, http.StatusInternalServerError, w)
+		ServeErrorTemplate(err, http.StatusInternalServerError, w)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -172,29 +172,29 @@ func (repoDetails *RepoDetails) ServeRepoTemplate(w http.ResponseWriter, r *http
 }
 
 func (repoDetails *RepoDetails) WriteRepoTemplate(p Paths, w io.Writer) error {
-	return serveTemplate(repoDetails, p, w, "repo", repo_html)
+	return ServeTemplate(repoDetails, p, w, "repo", repo_html)
 }
 
 // Shows reviews for a given branch
 // The branch to summarize is given by the 'repo' URL parameter.
 func (repoDetails *RepoDetails) ServeBranchTemplate(w http.ResponseWriter, r *http.Request) {
 	if err := repoDetails.Update(); err != nil {
-		serveErrorTemplate(err, http.StatusInternalServerError, w)
+		ServeErrorTemplate(err, http.StatusInternalServerError, w)
 		return
 	}
 	branchParam := r.URL.Query().Get("branch")
 	if branchParam == "" {
-		serveErrorTemplate(errors.New("No branch specified"), http.StatusBadRequest, w)
+		ServeErrorTemplate(errors.New("No branch specified"), http.StatusBadRequest, w)
 		return
 	}
 	branchNum, err := strconv.ParseUint(branchParam, 10, 32)
 	if err != nil || len(repoDetails.Branches) <= int(branchNum) {
-		serveErrorTemplate(errors.New("Bad branch specified"), http.StatusBadRequest, w)
+		ServeErrorTemplate(errors.New("Bad branch specified"), http.StatusBadRequest, w)
 		return
 	}
 	var writer bytes.Buffer
 	if err := repoDetails.WriteBranchTemplate(branchNum, ServePaths{}, &writer); err != nil {
-		serveErrorTemplate(err, http.StatusInternalServerError, w)
+		ServeErrorTemplate(err, http.StatusInternalServerError, w)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -212,7 +212,7 @@ func (repoDetails *RepoDetails) WriteBranchTemplate(branch uint64, p Paths, w io
 		BranchNum: branch,
 		BranchDetails: repoDetails.Branches[branch],
 	}
-	return serveTemplate(args, p, w, "branch", branch_html)
+	return ServeTemplate(args, p, w, "branch", branch_html)
 }
 
 // Show a review with inline diff
@@ -220,31 +220,31 @@ func (repoDetails *RepoDetails) WriteBranchTemplate(branch uint64, p Paths, w io
 // The review to write is given by the 'review' URL parameter.
 func (repoDetails *RepoDetails) ServeReviewTemplate(w http.ResponseWriter, r *http.Request) {
 	if err := repoDetails.Update(); err != nil {
-		serveErrorTemplate(err, http.StatusInternalServerError, w)
+		ServeErrorTemplate(err, http.StatusInternalServerError, w)
 		return
 	}
 	branchParam := r.URL.Query().Get("branch")
 	if branchParam == "" {
-		serveErrorTemplate(errors.New("No branch specified"), http.StatusBadRequest, w)
+		ServeErrorTemplate(errors.New("No branch specified"), http.StatusBadRequest, w)
 		return
 	}
 	branchNum, err := strconv.ParseUint(branchParam, 10, 32)
 	if err != nil || len(repoDetails.Branches) <= int(branchNum) {
-		serveErrorTemplate(errors.New("Bad branch specified"), http.StatusBadRequest, w)
+		ServeErrorTemplate(errors.New("Bad branch specified"), http.StatusBadRequest, w)
 		return
 	}
 	reviewParam := r.URL.Query().Get("review")
 	if reviewParam == "" {
-		serveErrorTemplate(errors.New("No review specified"), http.StatusBadRequest, w)
+		ServeErrorTemplate(errors.New("No review specified"), http.StatusBadRequest, w)
 		return
 	}
 	if err := checkStringLooksLikeHash(reviewParam); err != nil {
-		serveErrorTemplate(err, http.StatusBadRequest, w)
+		ServeErrorTemplate(err, http.StatusBadRequest, w)
 		return
 	}
 	var writer bytes.Buffer
 	if err := repoDetails.WriteReviewTemplate(branchNum, reviewParam, ServePaths{}, &writer); err != nil {
-		serveErrorTemplate(err, http.StatusInternalServerError, w)
+		ServeErrorTemplate(err, http.StatusInternalServerError, w)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -300,7 +300,7 @@ func (repoDetails *RepoDetails) WriteReviewTemplate(branch uint64, reviewID stri
 		Diffs: diffs,
 	}
 
-	return serveTemplate(args, p, w, "review", review_html)
+	return ServeTemplate(args, p, w, "review", review_html)
 }
 
 // ServeEntryPointRedirect writes the main redirect response to the given writer.
