@@ -41,7 +41,7 @@ func webGenerateStatic(repoDetails *web.RepoDetails) error {
 	if err != nil {
 		return err
 	}
-	if err := repoDetails.WriteStyleSheet(cssFile); err != nil {
+	if err := web.WriteStyleSheet(cssFile); err != nil {
 		return err
 	}
 
@@ -92,7 +92,7 @@ func webServe(repoDetails *web.RepoDetails) error {
 	branch, _, _     := strings.Cut(paths.Branch(0), "?")
 	review, _, _     := strings.Cut(paths.Review(0, ""), "?")
 
-	http.HandleFunc("/" + stylesheet, repoDetails.ServeStyleSheet)
+	http.HandleFunc("/" + stylesheet, web.ServeStyleSheet)
 	http.HandleFunc("/" + repo, repoDetails.ServeRepoTemplate)
 	http.HandleFunc("/" + branch, repoDetails.ServeBranchTemplate)
 	http.HandleFunc("/" + review, repoDetails.ServeReviewTemplate)

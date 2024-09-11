@@ -139,9 +139,9 @@ func ServeErrorTemplate(err error, code int, w http.ResponseWriter) {
 		http.Error(w, err.Error(), code)
 }
 
-func (repoDetails *RepoDetails) ServeStyleSheet(w http.ResponseWriter, r *http.Request) {
+func ServeStyleSheet(w http.ResponseWriter, r *http.Request) {
 	var writer bytes.Buffer
-	err := repoDetails.WriteStyleSheet(&writer)
+	err := WriteStyleSheet(&writer)
 	if err != nil {
 		ServeErrorTemplate(err, http.StatusInternalServerError, w)
 		return
@@ -150,7 +150,7 @@ func (repoDetails *RepoDetails) ServeStyleSheet(w http.ResponseWriter, r *http.R
 	w.Write(writer.Bytes())
 }
 
-func (repoDetails *RepoDetails) WriteStyleSheet(w io.Writer) error {
+func WriteStyleSheet(w io.Writer) error {
 	_, err := w.Write([]byte(stylesheet_css))
 
 	return err
@@ -158,12 +158,16 @@ func (repoDetails *RepoDetails) WriteStyleSheet(w io.Writer) error {
 
 // Lists branches
 func (repoDetails *RepoDetails) ServeRepoTemplate(w http.ResponseWriter, r *http.Request) {
+	repoDetails.ServeRepoTemplateWith(ServePaths{}, w, r)
+}
+
+func (repoDetails *RepoDetails) ServeRepoTemplateWith(p Paths, w http.ResponseWriter, r *http.Request) {
 	if err := repoDetails.Update(); err != nil {
 		ServeErrorTemplate(err, http.StatusInternalServerError, w)
 		return
 	}
 	var writer bytes.Buffer
-	if err := repoDetails.WriteRepoTemplate(ServePaths{}, &writer); err != nil {
+	if err := repoDetails.WriteRepoTemplate(p, &writer); err != nil {
 		ServeErrorTemplate(err, http.StatusInternalServerError, w)
 		return
 	}
@@ -178,6 +182,10 @@ func (repoDetails *RepoDetails) WriteRepoTemplate(p Paths, w io.Writer) error {
 // Shows reviews for a given branch
 // The branch to summarize is given by the 'repo' URL parameter.
 func (repoDetails *RepoDetails) ServeBranchTemplate(w http.ResponseWriter, r *http.Request) {
+	repoDetails.ServeBranchTemplateWith(ServePaths{}, w, r)
+}
+
+func (repoDetails *RepoDetails) ServeBranchTemplateWith(p Paths, w http.ResponseWriter, r *http.Request) {
 	if err := repoDetails.Update(); err != nil {
 		ServeErrorTemplate(err, http.StatusInternalServerError, w)
 		return
@@ -193,7 +201,7 @@ func (repoDetails *RepoDetails) ServeBranchTemplate(w http.ResponseWriter, r *ht
 		return
 	}
 	var writer bytes.Buffer
-	if err := repoDetails.WriteBranchTemplate(branchNum, ServePaths{}, &writer); err != nil {
+	if err := repoDetails.WriteBranchTemplate(branchNum, p, &writer); err != nil {
 		ServeErrorTemplate(err, http.StatusInternalServerError, w)
 		return
 	}
@@ -219,6 +227,10 @@ func (repoDetails *RepoDetails) WriteBranchTemplate(branch uint64, p Paths, w io
 // The enclosing repository is given by the 'repo' URL parameter.
 // The review to write is given by the 'review' URL parameter.
 func (repoDetails *RepoDetails) ServeReviewTemplate(w http.ResponseWriter, r *http.Request) {
+	repoDetails.ServeReviewTemplateWith(ServePaths{}, w, r)
+}
+
+func (repoDetails *RepoDetails) ServeReviewTemplateWith(p Paths, w http.ResponseWriter, r *http.Request) {
 	if err := repoDetails.Update(); err != nil {
 		ServeErrorTemplate(err, http.StatusInternalServerError, w)
 		return
@@ -243,7 +255,7 @@ func (repoDetails *RepoDetails) ServeReviewTemplate(w http.ResponseWriter, r *ht
 		return
 	}
 	var writer bytes.Buffer
-	if err := repoDetails.WriteReviewTemplate(branchNum, reviewParam, ServePaths{}, &writer); err != nil {
+	if err := repoDetails.WriteReviewTemplate(branchNum, reviewParam, p, &writer); err != nil {
 		ServeErrorTemplate(err, http.StatusInternalServerError, w)
 		return
 	}
