@@ -108,7 +108,7 @@
 /* Colour irrelevant -------------------------------------------------------- */
 
 body {
-	width: 100ex; /* Around 100 characters */
+	max-width: 100ex; /* Around 100 characters */
 	margin: auto;
 }
 div.file {
@@ -165,9 +165,12 @@ div.file {
 	/* Fix diff add/del background spilling over rounded border */
 	overflow: hidden;
 	width: inherit;
+	/* Adhere to widths */
+	table-layout: fixed;
+	width: 100%;
 }
-.linecontent {
-	width: 95%;
+.linenumbers {
+	width: 11ex;
 }
 /** Chromium engine bug, doesn't  work on <th>
 .diff .hunk {
