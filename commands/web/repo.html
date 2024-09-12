@@ -8,7 +8,9 @@
 	<body>
 		<h1 class="title">{{.Title}}</h3>
 		<h2 class="subtitle">{{.Subtitle}}</h4>
-		{{mdToHTML .Description}}
+		<div class="description">
+			{{mdToHTML .Description}}
+		</div>
 		<ol>
 			{{range $i, $v := .Branches}}
 				<a href="{{paths.Branch (u64 $i)}}">

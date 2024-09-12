@@ -11,7 +11,9 @@
 			→
 			“{{.BranchDetails.Title}}”
 		</h1>
-		{{mdToHTML .BranchDetails.Description}}
+		<div class="description">
+			{{mdToHTML .BranchDetails.Description}}
+		</div>
 		{{if .BranchDetails.OpenReviews}}
 			<h1>Open Reviews ({{.BranchDetails.OpenReviewCount}})</h1>
 			<ol class="open">

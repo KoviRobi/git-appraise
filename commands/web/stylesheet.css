@@ -222,3 +222,7 @@ pre.line {
 	font-size: small;
 	padding: 0.2em;
 }
+
+.description td, .description th {
+	padding: 0 0.4em;
+}
