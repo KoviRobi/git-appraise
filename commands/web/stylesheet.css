@@ -226,3 +226,7 @@ pre.line {
 .description td, .description th {
 	padding: 0 0.4em;
 }
+.pagenav {
+	text-align: center;
+	padding: 1em;
+}

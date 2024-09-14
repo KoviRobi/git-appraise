@@ -11,6 +11,21 @@ import (
 	"github.com/KoviRobi/git-appraise/review"
 )
 
+type ReviewType int
+const (
+	OpenReview      ReviewType = iota
+	ClosedReview
+	AbandonedReview
+)
+
+type ReviewIndex struct {
+	Type   ReviewType
+	// Index into RepoDetails.Branches[...] for Open/ClosedReview
+	Branch int
+	// Index into RepoDetails.{Branches[...].{OpenReviews,ClosedReviews},.AbandonedReviews}
+	Index  int
+}
+
 type BranchDetails struct {
 	Ref                 string
 	Title               string
@@ -37,6 +52,66 @@ type RepoDetails struct {
 	Description        string
 	Branches           BranchList
 	AbandonedReviews   []review.Summary
+	ReviewMap          map[string]ReviewIndex
+}
+
+func (reviewIndex *ReviewIndex) GetBranchTitle(repoDetails *RepoDetails) string {
+	if reviewIndex.Type == OpenReview || reviewIndex.Type == ClosedReview {
+		return repoDetails.Branches[reviewIndex.Branch].Title
+	} else {
+		return ""
+	}
+}
+
+func (reviewIndex *ReviewIndex) GetSummaries(repoDetails *RepoDetails) []review.Summary {
+	switch reviewIndex.Type {
+	case OpenReview:
+		return repoDetails.Branches[reviewIndex.Branch].OpenReviews
+	case ClosedReview:
+		return repoDetails.Branches[reviewIndex.Branch].ClosedReviews
+	case AbandonedReview:
+		return repoDetails.AbandonedReviews
+	}
+	return nil
+}
+
+func (reviewIndex *ReviewIndex) GetSummary(repoDetails *RepoDetails) *review.Summary {
+	summaries := reviewIndex.GetSummaries(repoDetails)
+	if reviewIndex.Index < len(summaries) {
+		return &summaries[reviewIndex.Index]
+	} else {
+		return nil
+	}
+}
+
+func (reviewIndex *ReviewIndex) GetPrevious(repoDetails *RepoDetails) *ReviewIndex {
+	if reviewIndex.Index > 0 {
+		previousIndex := *reviewIndex
+		previousIndex.Index -= 1
+		return &previousIndex
+	} else if reviewIndex.Branch > 0 &&
+	(reviewIndex.Type == OpenReview || reviewIndex.Type == ClosedReview) {
+		previousIndex := *reviewIndex
+		previousIndex.Branch -= 1
+		previousIndex.Index = len(previousIndex.GetSummaries(repoDetails)) - 1
+		return &previousIndex
+	}
+	return nil
+}
+
+func (reviewIndex *ReviewIndex) GetNext(repoDetails *RepoDetails) *ReviewIndex {
+	if reviewIndex.Index < len(reviewIndex.GetSummaries(repoDetails)) - 1 {
+		nextIndex := *reviewIndex
+		nextIndex.Index += 1
+		return &nextIndex
+	} else if reviewIndex.Branch < len(repoDetails.Branches) - 1 &&
+	(reviewIndex.Type == OpenReview || reviewIndex.Type == ClosedReview) {
+		nextIndex := *reviewIndex
+		nextIndex.Branch += 1
+		nextIndex.Index = 0
+		return &nextIndex
+	}
+	return nil
 }
 
 var repoDescriptionRe = regexp.MustCompile(`(# (.*)\n)?(## (.*)\n)?((?s).*)`)
@@ -120,6 +195,8 @@ func (repoDetails *RepoDetails) Update() error {
 		}
 	}
 
+	// We want oldest to newest, for our book/narrative purposes
+	slices.Reverse(abandonedReviews)
 	var branches BranchList
 	for _, branch := range branchesSet {
 		slices.Reverse(openReviews[branch.Ref])
@@ -134,8 +211,34 @@ func (repoDetails *RepoDetails) Update() error {
 	}
 	sort.Stable(branches)
 
+	reviewMap := make(map[string]ReviewIndex)
+	for index, abandoned := range abandonedReviews {
+		reviewMap[abandoned.Revision] = ReviewIndex{
+			Type: AbandonedReview,
+			Index: index,
+		}
+	}
+	for branchIndex, branch := range branches {
+		for reviewIndex, review := range branch.OpenReviews {
+			reviewMap[review.Revision] = ReviewIndex {
+				Type: OpenReview,
+				Branch: branchIndex,
+				Index: reviewIndex,
+			}
+		}
+		for reviewIndex, review := range branch.ClosedReviews {
+			reviewMap[review.Revision] = ReviewIndex {
+				Type: OpenReview,
+				Branch: branchIndex,
+				Index: reviewIndex,
+			}
+		}
+	}
+
 	repoDetails.Branches         = branches
 	repoDetails.AbandonedReviews = abandonedReviews
 	repoDetails.RepoHash         = stateHash
+	repoDetails.ReviewMap        = reviewMap
+
 	return nil
 }

@@ -25,10 +25,19 @@
 		<h1>
 			<a href="{{paths.Repo}}">{{.RepoDetails.Title}}</a>
 			→
-			<a href="{{paths.Branch .BranchNum}}">“{{.BranchDetails.Title}}”</a>
-			→
+			{{if .BranchTitle}}
+				<a href="{{paths.Branch .BranchNum}}">“{{.BranchTitle}}”</a>
+				→
+			{{end}}
 			{{.ReviewDetails.Request.Description}}
 		</h1>
+		{{with .Previous}}
+			<div class="pagenav">
+				<a href="{{.Link}}">
+					⎗ Previous “{{.Title}}”
+				</a>
+			</div>
+		{{end}}
 		<div class="commit">
 			<div class="metadata">
 				<div class="hash">{{.CommitHash}}</div>
@@ -89,6 +98,17 @@
 						{{end}}
 					{{end}}
 				</table>
+			</div>
+		{{end}}
+		{{with .Next}}
+			<div class="pagenav">
+				<a href="{{.Link}}">
+					Next “{{.Title}}” ⎘
+				</a>
+			</div>
+		{{else}}
+			<div class="pagenav">
+				<i>The End.</i>
 			</div>
 		{{end}}
 	</body>

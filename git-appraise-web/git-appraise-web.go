@@ -29,8 +29,8 @@ func (ServeMultiPaths) Repo() string { return "repo.html" }
 func (ServeMultiPaths) Branch(branch uint64) string {
 	return fmt.Sprintf("branch.html?branch=%d", branch)
 }
-func (ServeMultiPaths) Review(branch uint64, review string) string {
-	return fmt.Sprintf("review.html?branch=%d&review=%s", branch, review)
+func (ServeMultiPaths) Review(review string) string {
+	return fmt.Sprintf("review.html?review=%s", review)
 }
 
 type reposMap map[string]*web.RepoDetails
@@ -169,7 +169,7 @@ func webServe() {
 	stylesheet, _, _ := strings.Cut(paths.Css(), "?")
 	repo, _, _       := strings.Cut(paths.Repo(), "?")
 	branch, _, _     := strings.Cut(paths.Branch(0), "?")
-	review, _, _     := strings.Cut(paths.Review(0, ""), "?")
+	review, _, _     := strings.Cut(paths.Review(""), "?")
 
 	http.HandleFunc("/repos.html", repos.ServeReposTemplate)
 	http.HandleFunc(stylesheet, repos.ServeStyleSheet)

@@ -57,7 +57,7 @@ type Paths interface {
 	Css() string
 	Repo() string
 	Branch(branch uint64) string
-	Review(branch uint64, review string) string
+	Review(review string) string
 }
 
 type ServePaths struct {}
@@ -67,8 +67,8 @@ func (ServePaths) Repo() string { return "repo.html" }
 func (ServePaths) Branch(branch uint64) string {
 	return fmt.Sprintf("branch.html?branch=%d", branch)
 }
-func (ServePaths) Review(branch uint64, review string) string {
-	return fmt.Sprintf("review.html?branch=%d&review=%s", branch, review)
+func (ServePaths) Review(review string) string {
+	return fmt.Sprintf("review.html?review=%s", review)
 }
 
 type StaticPaths struct {}
@@ -78,8 +78,8 @@ func (StaticPaths) Repo() string { return "index.html" }
 func (StaticPaths) Branch(branch uint64) string {
 	return fmt.Sprintf("branch_%d.html", branch)
 }
-func (StaticPaths) Review(branch uint64, review string) string {
-	return fmt.Sprintf("review_%d_%s.html", branch, review)
+func (StaticPaths) Review(review string) string {
+	return fmt.Sprintf("review_%s.html", review)
 }
 
 func mdToHTML(md []byte) []byte {
@@ -235,16 +235,6 @@ func (repoDetails *RepoDetails) ServeReviewTemplateWith(p Paths, w http.Response
 		ServeErrorTemplate(err, http.StatusInternalServerError, w)
 		return
 	}
-	branchParam := r.URL.Query().Get("branch")
-	if branchParam == "" {
-		ServeErrorTemplate(errors.New("No branch specified"), http.StatusBadRequest, w)
-		return
-	}
-	branchNum, err := strconv.ParseUint(branchParam, 10, 32)
-	if err != nil || len(repoDetails.Branches) <= int(branchNum) {
-		ServeErrorTemplate(errors.New("Bad branch specified"), http.StatusBadRequest, w)
-		return
-	}
 	reviewParam := r.URL.Query().Get("review")
 	if reviewParam == "" {
 		ServeErrorTemplate(errors.New("No review specified"), http.StatusBadRequest, w)
@@ -255,7 +245,7 @@ func (repoDetails *RepoDetails) ServeReviewTemplateWith(p Paths, w http.Response
 		return
 	}
 	var writer bytes.Buffer
-	if err := repoDetails.WriteReviewTemplate(branchNum, reviewParam, p, &writer); err != nil {
+	if err := repoDetails.WriteReviewTemplate(reviewParam, p, &writer); err != nil {
 		ServeErrorTemplate(err, http.StatusInternalServerError, w)
 		return
 	}
@@ -263,8 +253,8 @@ func (repoDetails *RepoDetails) ServeReviewTemplateWith(p Paths, w http.Response
 	w.Write(writer.Bytes())
 }
 
-func (repoDetails *RepoDetails) WriteReviewTemplate(branch uint64, reviewID string, p Paths, w io.Writer) error {
-	reviewDetails, err := review.Get(repoDetails.Repo, reviewID)
+func (repoDetails *RepoDetails) WriteReviewTemplate(reviewRev string, p Paths, w io.Writer) error {
+	reviewDetails, err := review.Get(repoDetails.Repo, reviewRev)
 	if err != nil {
 		return err
 	}
@@ -283,6 +273,39 @@ func (repoDetails *RepoDetails) WriteReviewTemplate(branch uint64, reviewID stri
 		return err
 	}
 
+	type ReviewNavigation struct {
+		Link string
+		Title string
+	}
+
+	reviewIndex := repoDetails.ReviewMap[reviewRev]
+	var previousReview *ReviewNavigation
+	var nextReview *ReviewNavigation
+	if previous := reviewIndex.GetPrevious(repoDetails); previous != nil {
+		// For previous, we always just want to go to the reviews
+		summary := previous.GetSummary(repoDetails)
+		previousReview = &ReviewNavigation{
+			Link: p.Review(summary.Revision),
+			Title: summary.Request.Description,
+		}
+	}
+	if next := reviewIndex.GetNext(repoDetails); next != nil {
+		// But for next, we want to go to the branch (title) page if it's a new
+		// branch
+		if next.Branch != reviewIndex.Branch {
+			nextReview = &ReviewNavigation{
+				Link: p.Branch(uint64(next.Branch)),
+				Title: repoDetails.Branches[next.Branch].Title,
+			}
+		} else {
+			summary := next.GetSummary(repoDetails)
+			nextReview = &ReviewNavigation{
+				Link: p.Review(summary.Revision),
+				Title: summary.Request.Description,
+			}
+		}
+	}
+
 	var commitThreads = make(map[uint32][]review.CommentThread)
 	var lineThreads = make(map[string]map[uint32][]review.CommentThread)
 	output.SeparateComments(reviewDetails.Summary.Comments, commitThreads, lineThreads)
@@ -290,7 +313,7 @@ func (repoDetails *RepoDetails) WriteReviewTemplate(branch uint64, reviewID stri
 	type templateArgs struct {
 		RepoDetails *RepoDetails
 		BranchNum uint64
-		BranchDetails *BranchDetails
+		BranchTitle string
 		CommitHash string
 		CommitDetails *repository.CommitDetails
 		CommitLines []string
@@ -298,11 +321,13 @@ func (repoDetails *RepoDetails) WriteReviewTemplate(branch uint64, reviewID stri
 		ReviewDetails *review.Review
 		LineThreads map[string]map[uint32][]review.CommentThread
 		Diffs []repository.FileDiff
+		Previous *ReviewNavigation
+		Next *ReviewNavigation
 	}
 	args := templateArgs{
 		RepoDetails: repoDetails,
-		BranchNum: branch,
-		BranchDetails: repoDetails.Branches[branch],
+		BranchNum: uint64(reviewIndex.Branch),
+		BranchTitle: reviewIndex.GetBranchTitle(repoDetails),
 		CommitHash: commit,
 		CommitDetails: commitDetails,
 		CommitLines: strings.Split(commitMessage, "\n"),
@@ -310,6 +335,8 @@ func (repoDetails *RepoDetails) WriteReviewTemplate(branch uint64, reviewID stri
 		ReviewDetails: reviewDetails,
 		LineThreads: lineThreads,
 		Diffs: diffs,
+		Previous: previousReview,
+		Next: nextReview,
 	}
 
 	return ServeTemplate(args, p, w, "review", review_html)

@@ -65,11 +65,11 @@ func webGenerateStatic(repoDetails *web.RepoDetails) error {
 
 		for _, reviews := range [][]review.Summary{branch.OpenReviews, branch.ClosedReviews} {
 			for _, review := range reviews {
-				reviewFile, err := os.Create(paths.Review(idx, review.Revision))
+				reviewFile, err := os.Create(paths.Review(review.Revision))
 				if err != nil {
 					return err
 				}
-				if err := repoDetails.WriteReviewTemplate(idx, review.Revision, paths, reviewFile); err != nil {
+				if err := repoDetails.WriteReviewTemplate(review.Revision, paths, reviewFile); err != nil {
 					return err
 				}
 			}
@@ -90,7 +90,7 @@ func webServe(repoDetails *web.RepoDetails) error {
 	stylesheet, _, _ := strings.Cut(paths.Css(), "?")
 	repo, _, _       := strings.Cut(paths.Repo(), "?")
 	branch, _, _     := strings.Cut(paths.Branch(0), "?")
-	review, _, _     := strings.Cut(paths.Review(0, ""), "?")
+	review, _, _     := strings.Cut(paths.Review(""), "?")
 
 	http.HandleFunc("/" + stylesheet, web.ServeStyleSheet)
 	http.HandleFunc("/" + repo, repoDetails.ServeRepoTemplate)
