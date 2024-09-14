@@ -7,8 +7,11 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
+	"syscall"
 
 	"github.com/KoviRobi/git-appraise/commands/web"
 	"github.com/KoviRobi/git-appraise/repository"
@@ -30,15 +33,18 @@ func (ServeMultiPaths) Review(branch uint64, review string) string {
 	return fmt.Sprintf("review.html?branch=%d&review=%s", branch, review)
 }
 
+type reposMap map[string]*web.RepoDetails
+type Repos atomic.Pointer[reposMap]
 
-type Repos map[string]*web.RepoDetails
+func (oldRepos *Repos) Discover() error {
+	var newRepos = make(reposMap)
 
-func (repos Repos) Discover() error {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return err
 	}
-	return filepath.Walk(cwd, func(path string, info os.FileInfo, err error) error {
+
+	err = filepath.Walk(cwd, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -58,51 +64,67 @@ func (repos Repos) Discover() error {
 			if err := repoDetails.Update(); err != nil {
 				return nil
 			}
-			repos[path] = repoDetails
+			newRepos[path] = repoDetails
 			return filepath.SkipDir
 		}
 		return nil
 	})
+
+	if err != nil {
+		return err
+	}
+
+	// reposPtr := unsafe.Pointer(repos)
+	// atomic.SwapPointer(&reposPtr, unsafe.Pointer(&newRepos))
+	(*atomic.Pointer[reposMap])(oldRepos).Swap(&newRepos)
+	return nil
 }
 
-func (repos Repos) ServeStyleSheet(w http.ResponseWriter, r *http.Request) {
+func (ptr *Repos) Load() reposMap {
+	return *(*atomic.Pointer[reposMap])(ptr).Load()
+}
+func (ptr *Repos) Store(value *reposMap) {
+	(*atomic.Pointer[reposMap])(ptr).Store(value)
+}
+
+func (repos *Repos) ServeStyleSheet(w http.ResponseWriter, r *http.Request) {
 	web.ServeStyleSheet(w, r)
 }
 
-func (repos Repos) ServeRepoTemplate(w http.ResponseWriter, r *http.Request) {
+func (repos *Repos) ServeRepoTemplate(w http.ResponseWriter, r *http.Request) {
 	repo := r.PathValue("repo")
-	if repoDetails, found := repos[repo]; found {
+	if repoDetails, found := repos.Load()[repo]; found {
 		repoDetails.ServeRepoTemplateWith(ServeMultiPaths{}, w, r)
 	} else {
 		http.Error(w, "Repository " + repo + " not found!", http.StatusNotFound)
 	}
 }
 
-func (repos Repos) ServeBranchTemplate(w http.ResponseWriter, r *http.Request) {
+func (repos *Repos) ServeBranchTemplate(w http.ResponseWriter, r *http.Request) {
 	repo := r.PathValue("repo")
-	if repoDetails, found := repos[repo]; found {
+	if repoDetails, found := repos.Load()[repo]; found {
 		repoDetails.ServeBranchTemplateWith(ServeMultiPaths{}, w, r)
 	} else {
 		http.Error(w, "Repository " + repo + " not found!", http.StatusNotFound)
 	}
 }
 
-func (repos Repos) ServeReviewTemplate(w http.ResponseWriter, r *http.Request) {
+func (repos *Repos) ServeReviewTemplate(w http.ResponseWriter, r *http.Request) {
 	repo := r.PathValue("repo")
-	if repoDetails, found := repos[repo]; found {
+	if repoDetails, found := repos.Load()[repo]; found {
 		repoDetails.ServeReviewTemplateWith(ServeMultiPaths{}, w, r)
 	} else {
 		http.Error(w, "Repository " + repo + " not found!", http.StatusNotFound)
 	}
 }
 
-func (repos Repos) ServeReposTemplate(w http.ResponseWriter, r *http.Request) {
+func (repos *Repos) ServeReposTemplate(w http.ResponseWriter, r *http.Request) {
 	type ReposInfo struct {
-		Repos Repos
+		Repos  reposMap
 		GitWeb string
 	}
-	reposInfo := ReposInfo {
-		Repos: repos,
+	reposInfo := ReposInfo{
+		Repos:  repos.Load(),
 		GitWeb: "/gitweb",
 	}
 	var writer bytes.Buffer
@@ -121,7 +143,8 @@ func (repos *Repos) ServeEntryPointRedirect(w http.ResponseWriter, r *http.Reque
 
 func webServe() {
 	var paths ServeMultiPaths
-	repos := make(Repos)
+	repos := Repos{}
+	repos.Store(new(reposMap))
 
 	repos.Discover()
 
@@ -129,6 +152,19 @@ func webServe() {
 		func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "ok")
 		})
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGUSR1)
+	go func() {
+		for {
+			select {
+			case sig := <-sigs:
+				if sig == syscall.SIGUSR1 {
+					repos.Discover()
+				}
+			}
+		}
+	}()
 
 	stylesheet, _, _ := strings.Cut(paths.Css(), "?")
 	repo, _, _       := strings.Cut(paths.Repo(), "?")
