@@ -182,7 +182,7 @@ div.file {
 	border-left-width: 1pt;
 	border-left-style: solid;
 }
-.thread .linecontent, .hunk .linecontent {
+.thread .linecontent {
 	border-left-width: 1pt;
 	border-left-style: dashed;
 	padding-left: 1ex;

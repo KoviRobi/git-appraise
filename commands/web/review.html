@@ -1,115 +1,115 @@
-{{define "subThread"}}
+{{- define "subThread" -}}
 	<div class="comment">
 		<p class="author">
-			{{.Comment.Author}}
-			<span class="resolved-{{.Comment.Resolved}}"></span>
+			{{- .Comment.Author -}}
+			<span class="resolved-{{- .Comment.Resolved -}}"></span>
 		</p>
 		<div class="content">
 			{{- if .Comment.Description -}}
-				<div class="description">{{mdToHTML .Comment.Description}}</div>
+				<div class="description">{{- mdToHTML .Comment.Description -}}</div>
 			{{- end -}}
 			{{- range .Children -}}
-				{{template "subThread" .}}
+				{{- template "subThread" . -}}
 			{{- end -}}
 		</div>
 	</div>
-{{end}}
+{{- end -}}
 <!DOCTYPE html>
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title>Review: “{{.ReviewDetails.Request.Description}}”</title>
-		<link rel="stylesheet" href="{{paths.Css}}"/>
+		<title>Review: “{{- .ReviewDetails.Request.Description -}}”</title>
+		<link rel="stylesheet" href="{{- paths.Css -}}"/>
 	</head>
 	<body>
 		<h1>
-			<a href="{{paths.Repo}}">{{.RepoDetails.Title}}</a>
+			<a href="{{- paths.Repo -}}">{{- .RepoDetails.Title -}}</a>
 			→
-			{{if .BranchTitle}}
-				<a href="{{paths.Branch .BranchNum}}">“{{.BranchTitle}}”</a>
+			{{- if .BranchTitle -}}
+				<a href="{{- paths.Branch .BranchNum -}}">“{{- .BranchTitle -}}”</a>
 				→
-			{{end}}
-			{{.ReviewDetails.Request.Description}}
+			{{- end -}}
+			{{- .ReviewDetails.Request.Description -}}
 		</h1>
-		{{with .Previous}}
+		{{- with .Previous -}}
 			<div class="pagenav">
-				<a href="{{.Link}}">
-					⎗ Previous “{{.Title}}”
+				<a href="{{- .Link -}}">
+					⎗ Previous “{{- .Title -}}”
 				</a>
 			</div>
-		{{end}}
+		{{- end -}}
 		<div class="commit">
 			<div class="metadata">
-				<div class="hash">{{.CommitHash}}</div>
-				<div class="author">{{.CommitDetails.AuthorEmail}}</div>
+				<div class="hash">{{- .CommitHash -}}</div>
+				<div class="author">{{- .CommitDetails.AuthorEmail -}}</div>
 			</div>
-			{{$commitLine := (u64 0)}}
-			{{range .CommitLines}}
-				{{range index $.CommitThreads $commitLine}}
-					{{template "subThread" .}}
-				{{end}}
-				<pre class="message line- {{- $commitLine -}}">{{.}}</pre>
-				{{$commitLine = addu64 $commitLine 1}}
-			{{end}}
-			{{range index $.CommitThreads $commitLine}}
-				{{template "subThread" .}}
-			{{end}}
+			{{- $commitLine := (u64 0) -}}
+			{{- range .CommitLines -}}
+				{{- range index $.CommitThreads $commitLine -}}
+					{{- template "subThread" . -}}
+				{{- end -}}
+				<pre class="message line- {{- $commitLine -}}">{{- . -}}</pre>
+				{{- $commitLine = addu64 $commitLine 1 -}}
+			{{- end -}}
+			{{- range index $.CommitThreads $commitLine -}}
+				{{- template "subThread" . -}}
+			{{- end -}}
 		</div>
-		{{range .Diffs}}
-			{{$newName := .NewName}}
+		{{- range .Diffs -}}
+			{{- $newName := .NewName -}}
 			<div class="file">
-				<h2 class="filename">&langle;{{.NewName}}&rangle;&equiv;</h2>
+				<h2 class="filename">&langle;{{- .NewName -}}&rangle;&equiv;</h2>
 				<table class="diff">
-					{{range .Fragments}}
-						{{$lhs := startOfHunk .OldPosition}}
-						{{$rhs := startOfHunk .NewPosition}}
+					{{- range .Fragments -}}
+						{{- $lhs := startOfHunk .OldPosition -}}
+						{{- $rhs := startOfHunk .NewPosition -}}
 						<tr class="hunk">
 							<td class="linenumbers" colspan=2></td>
 							<td class="linecontent">
-								<pre>@@ -{{.OldPosition}},{{.OldLines}} +{{.NewPosition}},{{.NewLines}} @@{{.Comment}}</pre>
+								<pre>@@ -{{- .OldPosition -}},{{- .OldLines -}} +{{- .NewPosition -}},{{- .NewLines -}} @@{{- .Comment -}}</pre>
 							</td>
 						</tr>
-						{{range .Lines}}
-							{{if isLHS .Op}}
-								{{$lhs = addu64 $lhs 1}}
-							{{end}}
-							{{if isRHS .Op}}
-								{{range index $.LineThreads $newName $rhs}}
+						{{- range .Lines -}}
+							{{- if isLHS .Op -}}
+								{{- $lhs = addu64 $lhs 1 -}}
+							{{- end -}}
+							{{- if isRHS .Op -}}
+								{{- range index $.LineThreads $newName $rhs -}}
 									<tr class="thread">
 										<td class="linenumbers" colspan=2></td>
-										<td class="linecontent">{{template "subThread" .}}</td>
+										<td class="linecontent">{{- template "subThread" . -}}</td>
 									</tr>
-								{{end}}
-								{{$rhs = addu64 $rhs 1}}
-							{{end}}
-							<tr class="{{opName .Op}}">
-								<td class="linenumbers">{{if isLHS .Op}}<span>{{$lhs}}</span>{{end}}</td>
-								<td class="linenumbers">{{if isRHS .Op}}<span>{{$rhs}}</span>{{end}}</td>
+								{{- end -}}
+								{{- $rhs = addu64 $rhs 1 -}}
+							{{- end -}}
+							<tr class="{{- opName .Op -}}">
+								<td class="linenumbers">{{- if isLHS .Op -}}<span>{{- $lhs -}}</span>{{- end -}}</td>
+								<td class="linenumbers">{{- if isRHS .Op -}}<span>{{- $rhs -}}</span>{{- end -}}</td>
 								<td class="linecontent code">
 									<pre class="line">{{- .Op -}}{{- .Line -}}</pre>
 								</td>
 							</tr>
-						{{end}}
-						{{range index $.LineThreads $newName $rhs}}
+						{{- end -}}
+						{{- range index $.LineThreads $newName $rhs -}}
 							<tr>
 								<td class="linenumbers" colspan=2></td>
-								<td class="linecontent thread">{{template "subThread" .}}</td>
+								<td class="linecontent thread">{{- template "subThread" . -}}</td>
 							</tr>
-						{{end}}
-					{{end}}
+						{{- end -}}
+					{{- end -}}
 				</table>
 			</div>
-		{{end}}
-		{{with .Next}}
+		{{- end -}}
+		{{- with .Next -}}
 			<div class="pagenav">
-				<a href="{{.Link}}">
-					Next “{{.Title}}” ⎘
+				<a href="{{- .Link -}}">
+					Next “{{- .Title -}}” ⎘
 				</a>
 			</div>
-		{{else}}
+		{{- else -}}
 			<div class="pagenav">
 				<i>The End.</i>
 			</div>
-		{{end}}
+		{{- end -}}
 	</body>
 </html>

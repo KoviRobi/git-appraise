@@ -2,43 +2,45 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title>{{.RepoDetails.Title}} {{.BranchDetails.Title}}</title>
-		<link rel="stylesheet" href="{{paths.Css}}"/>
+		<title>{{- .RepoDetails.Title -}} {{- .BranchDetails.Title -}}</title>
+		<link rel="stylesheet" href="{{- paths.Css -}}"/>
 	</head>
 	<body>
 		<h1>
-		<a href="{{paths.Repo}}">{{.RepoDetails.Title}}</a>
+		<a href="{{- paths.Repo -}}">{{- .RepoDetails.Title -}}</a>
 			→
-			“{{.BranchDetails.Title}}”
+			“{{- .BranchDetails.Title -}}”
 		</h1>
 		<div class="description">
-			{{mdToHTML .BranchDetails.Description}}
+			{{- mdToHTML .BranchDetails.Description -}}
 		</div>
-		{{if .BranchDetails.OpenReviews}}
-			<h1>Open Reviews ({{.BranchDetails.OpenReviewCount}})</h1>
+		{{- if .BranchDetails.OpenReviews -}}
+			<h1>Open Reviews ({{- .BranchDetails.OpenReviewCount -}})</h1>
 			<ol class="open">
-				{{range .BranchDetails.OpenReviews}}
-						<a href="{{paths.Review .Revision}}">
+				{{- range .BranchDetails.OpenReviews -}}
+						<a href="{{- paths.Review .Revision -}}">
 						<li class="open review">
-							<span class="open review review-description">{{.Request.Description}}</span>
-							<span class="open review review-comments">{{len .Comments}}</span>
+							<p>
+								<span class="open review review-description">{{- .Request.Description -}}</span>
+								<span class="open review review-comments">{{- len .Comments -}}</span>
+							</p>
 						</li>
 					</a>
-				{{end}}
+				{{- end -}}
 			</ol>
-		{{end}}
-		{{if .BranchDetails.ClosedReviews}}
-			<h1>Closed Reviews ({{.BranchDetails.ClosedReviewCount}})</h1>
+		{{- end -}}
+		{{- if .BranchDetails.ClosedReviews -}}
+			<h1>Closed Reviews ({{- .BranchDetails.ClosedReviewCount -}})</h1>
 			<ol class="closed">
-				{{range .BranchDetails.ClosedReviews}}
-					<a href="{{paths.Review $.BranchNum .Revision}}">
+				{{- range .BranchDetails.ClosedReviews -}}
+					<a href="{{- paths.Review $.BranchNum .Revision -}}">
 						<li class="closed review">
-							<span class="closed review review-description">{{.Request.Description}}</span>
-							<span class="closed review review-comments">{{len .Comments}}</span>
+							<span class="closed review review-description">{{- .Request.Description -}}</span>
+							<span class="closed review review-comments">{{- len .Comments -}}</span>
 						</li>
 					</a>
-				{{end}}
+				{{- end -}}
 			</ol>
-		{{end}}
+		{{- end -}}
 	</body>
 </html>

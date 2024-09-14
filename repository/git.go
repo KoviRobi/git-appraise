@@ -382,7 +382,7 @@ func parsedDiff(diff string) ([]FileDiff, error) {
 				}
 				lines = append(lines, DiffLine{
 					Op: op,
-					Line: line.Line,
+					Line: strings.Trim(line.Line, "\n"),
 				})
 			}
 
