@@ -110,6 +110,8 @@
 body {
 	max-width: 100ex; /* Around 100 characters */
 	margin: auto;
+	text-size-adjust: 100%;
+	tab-size: 4ex;
 }
 div.file {
 	width: inherit;
@@ -127,6 +129,9 @@ div.file {
 .commit > .metadata {
 	border-bottom: 1pt solid;
 	padding: 1em;
+}
+.metadata .author::before {
+	content: "Author: ";
 }
 .commit > .message {
 	font-family: "Serif";
@@ -148,9 +153,6 @@ div.file {
 .hash::before {
 	content: "Commit: ";
 	white-space: nowrap;
-}
-.author::before {
-	content: "Author: ";
 }
 .filename {
 	position: sticky;
@@ -186,12 +188,15 @@ div.file {
 	border-left-width: 1pt;
 	border-left-style: dashed;
 	padding-left: 1ex;
+	padding-right: 2em;
+	text-align: justify;
+	hyphens: auto;
 }
-.diff pre, .diff span {
+.diff td > * {
 	margin: 2pt;
 }
-.diff span {
-	padding: 0pt 2pt;
+.diff td > .comment {
+	margin: 0.5em 0;
 }
 pre {
 	/* For some reason font seems smaller -- fix font? */
@@ -201,16 +206,13 @@ pre {
 pre.message {
 	white-space: pre-wrap;
 }
-pre.line {
-	text-overflow: scroll;
-}
-.comment .content:empty {
-	display: none;
-}
-.comment .content {
+.comment {
 	border-left-width: 1pt;
 	border-left-style: solid;
 	padding-left: 1em;
+}
+.comment .content:empty {
+	display: none;
 }
 .review-comments::before {
 	content: "🗪";
