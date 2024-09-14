@@ -15,9 +15,12 @@ import (
 
 	"github.com/KoviRobi/git-appraise/commands/web"
 	"github.com/KoviRobi/git-appraise/repository"
+	"github.com/gorilla/websocket"
 )
 
 var port = flag.Uint("port", 0, "Web server port.")
+
+var upgrader = websocket.Upgrader{}
 
 //go:embed repos.html
 var repos_html string
@@ -139,6 +142,15 @@ func (repos *Repos) ServeReposTemplate(w http.ResponseWriter, r *http.Request) {
 func (repos *Repos) ServeEntryPointRedirect(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/repos.html", http.StatusTemporaryRedirect)
 	return
+}
+
+func (repos *Repos) WebsocketNotifications(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		fmt.Printf("Failed to open websocket: %#v\n", err)
+		return
+	}
+	defer conn.Close()
 }
 
 func webServe() {
