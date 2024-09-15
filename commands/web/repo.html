@@ -17,7 +17,7 @@
 					<li>
 						<h3 class="title">{{- .Title -}}
 						{{- if or (gt .OpenReviewCount 0) (gt .ClosedReviewCount 0) -}}
-							({{- .OpenReviewCount -}}
+							&nbsp;({{- .OpenReviewCount -}}
 							{{- if gt .ClosedReviewCount 0 -}}
 							/{{- .ClosedReviewCount -}}
 							{{- end -}})
