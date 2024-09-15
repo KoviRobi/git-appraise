@@ -108,11 +108,12 @@
 /* Colour irrelevant -------------------------------------------------------- */
 
 body {
-	max-width: 100ex; /* Around 100 characters */
+	width: 60em; /* Around 100 characters */
 	margin: auto;
 	text-size-adjust: 100%;
-	tab-size: 4ex;
+	tab-size: 2em;
 }
+
 div.file {
 	width: inherit;
 }
@@ -166,13 +167,15 @@ div.file {
 	border-radius: 1em;
 	/* Fix diff add/del background spilling over rounded border */
 	overflow: hidden;
-	width: inherit;
 	/* Adhere to widths */
 	table-layout: fixed;
-	width: 100%;
+	/* Allow scrolling */
+	min-width: 60em;
+	width: auto;
 }
 .linenumbers {
-	width: 11ex;
+	width: 20pt;
+	padding-left: 4pt;
 }
 /** Chromium engine bug, doesn't  work on <th>
 .diff .hunk {
