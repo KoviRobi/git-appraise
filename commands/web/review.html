@@ -91,9 +91,9 @@
 							</tr>
 						{{- end -}}
 						{{- range index $.LineThreads $newName $rhs -}}
-							<tr>
+							<tr class="thread">
 								<td class="linenumbers" colspan=2></td>
-								<td class="linecontent thread">{{- template "subThread" . -}}</td>
+								<td class="linecontent">{{- template "subThread" . -}}</td>
 							</tr>
 						{{- end -}}
 					{{- end -}}
