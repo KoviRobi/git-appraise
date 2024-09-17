@@ -71,10 +71,10 @@ func LaunchEditor(repo repository.Repo, fileName string) (string, error) {
 
 	output, err := ioutil.ReadFile(path)
 	if err != nil {
-		os.Remove(path)
+		// Leave file for next time
 		return "", fmt.Errorf("Error reading edited file: %v\n", err)
 	}
-	os.Remove(path)
+	// Leave file for next time
 	return string(output), err
 }
 
