@@ -55,7 +55,7 @@ func showDetachedComments(repo repository.Repo, args []string) error {
 	if *showJSONOutput {
 		return output.PrintCommentsJSON(comments)
 	}
-	return output.PrintComments(repo, comments)
+	return output.PrintComments("-d", repo, comments)
 }
 
 // showReview prints the current code review.

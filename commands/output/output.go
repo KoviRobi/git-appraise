@@ -48,10 +48,10 @@ const (
   build status: %s
 `
 	// Template for printing the location of an inline comment
-	commentLocationTemplate = `%s%q@%.12s
+	commentLocationTemplate = `%sgit appraise comment -f '%s' %.12s
 `
 	// Template for printing a single comment.
-	commentTemplate = `comment: %s
+	commentTemplate = `git appraise comment -p %s %s
 author: %s
 time:   %s
 status: %s`
@@ -127,7 +127,7 @@ func reformatTimestamp(timestamp string) string {
 }
 
 // showThread prints the detailed output for an entire comment thread.
-func showThread(repo repository.Repo, thread review.CommentThread, indent string) error {
+func showThread(review string, repo repository.Repo, thread review.CommentThread, indent string) error {
 	comment := thread.Comment
 	if comment.Location != nil && comment.Location.Path != "" && comment.Location.Range != nil && comment.Location.Range.StartLine > 0 {
 		contents, err := repo.Show(comment.Location.Commit, comment.Location.Path)
@@ -163,11 +163,11 @@ func showThread(repo repository.Repo, thread review.CommentThread, indent string
 			fmt.Println(indent + "|" + strings.Join(lines[firstLine-1:lastLine], "\n"+indent+"|"))
 		}
 	}
-	return showSubThread(repo, thread, indent)
+	return showSubThread(review, repo, thread, indent)
 }
 
 // showSubThread prints the given comment (sub)thread, indented by the given prefix string.
-func showSubThread(repo repository.Repo, thread review.CommentThread, indent string) error {
+func showSubThread(review string, repo repository.Repo, thread review.CommentThread, indent string) error {
 	statusString := "fyi"
 	if thread.Resolved != nil {
 		if *thread.Resolved {
@@ -178,14 +178,14 @@ func showSubThread(repo repository.Repo, thread review.CommentThread, indent str
 	}
 	threadHash := thread.Hash
 	timestamp := reformatTimestamp(thread.Comment.Timestamp)
-	commentSummary := fmt.Sprintf(indent+commentTemplate, threadHash, thread.Comment.Author, timestamp, statusString)
+	commentSummary := fmt.Sprintf(indent+commentTemplate, threadHash, review, thread.Comment.Author, timestamp, statusString)
 	indent = indent + "  "
 	indentedSummary := strings.Replace(commentSummary, "\n", "\n"+indent, -1)
 	indentedDescription := Reflow(thread.Comment.Description, indent, 80)
 	fmt.Println(indentedSummary)
 	fmt.Println(indentedDescription)
 	for _, child := range thread.Children {
-		err := showSubThread(repo, child, indent)
+		err := showSubThread(review, repo, child, indent)
 		if err != nil {
 			return err
 		}
@@ -199,9 +199,9 @@ func printAnalyses(r *review.Review) {
 }
 
 // printCommentsWithIndent prints all of the comment threads with the given indent before each line.
-func printCommentsWithIndent(repo repository.Repo, c []review.CommentThread, indent string) error {
+func printCommentsWithIndent(review string, repo repository.Repo, c []review.CommentThread, indent string) error {
 	for _, thread := range c {
-		err := showThread(repo, thread, indent)
+		err := showThread(review, repo, thread, indent)
 		if err != nil {
 			return err
 		}
@@ -210,9 +210,9 @@ func printCommentsWithIndent(repo repository.Repo, c []review.CommentThread, ind
 }
 
 // PrintComments prints all of the given comment threads.
-func PrintComments(repo repository.Repo, c []review.CommentThread) error {
+func PrintComments(review string, repo repository.Repo, c []review.CommentThread) error {
 	fmt.Printf(commentListTemplate, len(c))
-	return printCommentsWithIndent(repo, c, "  ")
+	return printCommentsWithIndent(review, repo, c, "  ")
 }
 
 // Separates comments into commit message comments and file comments. A line
@@ -276,13 +276,13 @@ func PrintInlineComments(r *review.Review, diffArgs ...string) error {
 	// on the commit message?
 	fmt.Printf(commitTemplate, headCommit, commitDetails.Author, commitDetails.AuthorTime)
 	for _, thread := range commitThreads[0] {
-		showSubThread(r.Repo, thread, "")
+		showSubThread(r.Summary.Revision, r.Repo, thread, "")
 	}
 	commitMessageLines := strings.Split(commitMessage, "\n")
 	for i, line := range commitMessageLines {
 		fmt.Println(line)
 		for _, thread := range commitThreads[uint32(i+1)] {
-			showSubThread(r.Repo, thread, "")
+			showSubThread(r.Summary.Revision, r.Repo, thread, "")
 		}
 	}
 
@@ -291,7 +291,7 @@ func PrintInlineComments(r *review.Review, diffArgs ...string) error {
 		fmt.Printf(commentLocationTemplate, "", file.NewName, headCommit)
 		// Line 0 is whole file comment
 		for _, thread := range lineThreads[file.NewName][0] {
-			showSubThread(r.Repo, thread, "| ")
+			showSubThread(r.Summary.Revision, r.Repo, thread, "| ")
 		}
 		var prevLine uint64 = 1
 		for _, frag := range file.Fragments {
@@ -345,7 +345,7 @@ func PrintInlineComments(r *review.Review, diffArgs ...string) error {
 // printComments prints all of the comments for the review, with snippets of the preceding source code.
 func printComments(r *review.Review) error {
 	fmt.Printf(commentSummaryTemplate, len(r.Comments))
-	return printCommentsWithIndent(r.Repo, r.Comments, "    ")
+	return printCommentsWithIndent(r.Summary.Revision, r.Repo, r.Comments, "    ")
 }
 
 // PrintDetails prints a multi-line overview of a review, including all comments.
