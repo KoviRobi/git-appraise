@@ -89,6 +89,9 @@ func validateArgs(repo repository.Repo, args []string, threads []review.CommentT
 			return err
 		}
 	}
+	if *commentMessageFile == "" && *commentMessage == "" {
+		return errors.New("No comment")
+	}
 	return nil
 }
 
